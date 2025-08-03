@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<circuit>
+  <version>2</version>
+  <attributes/>
+  <visualElements>
+    <visualElement>
+      <elementName>AND16bits.dig</elementName>
+      <elementAttributes/>
+      <pos x="1000" y="520"/>
+    </visualElement>
+    <visualElement>
+      <elementName>AND16bits.dig</elementName>
+      <elementAttributes/>
+      <pos x="1160" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>OR16bits.dig</elementName>
+      <elementAttributes/>
+      <pos x="1000" y="660"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Not</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>16</int>
+        </entry>
+      </elementAttributes>
+      <pos x="1080" y="540"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>A</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>16</int>
+        </entry>
+      </elementAttributes>
+      <pos x="800" y="520"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>B</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>16</int>
+        </entry>
+      </elementAttributes>
+      <pos x="800" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>S</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>16</int>
+        </entry>
+      </elementAttributes>
+      <pos x="1260" y="620"/>
+    </visualElement>
+  </visualElements>
+  <wires>
+    <wire>
+      <p1 x="1120" y="640"/>
+      <p2 x="1160" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="560"/>
+      <p2 x="1000" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="880" y="660"/>
+      <p2 x="1000" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="800" y="520"/>
+      <p2 x="880" y="520"/>
+    </wire>
+    <wire>
+      <p1 x="880" y="520"/>
+      <p2 x="1000" y="520"/>
+    </wire>
+    <wire>
+      <p1 x="1120" y="600"/>
+      <p2 x="1160" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="800" y="600"/>
+      <p2 x="960" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="680"/>
+      <p2 x="1120" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="540"/>
+      <p2 x="1080" y="540"/>
+    </wire>
+    <wire>
+      <p1 x="1220" y="620"/>
+      <p2 x="1260" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="700"/>
+      <p2 x="1000" y="700"/>
+    </wire>
+    <wire>
+      <p1 x="1120" y="540"/>
+      <p2 x="1120" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="1120" y="640"/>
+      <p2 x="1120" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="880" y="520"/>
+      <p2 x="880" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="560"/>
+      <p2 x="960" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="600"/>
+      <p2 x="960" y="700"/>
+    </wire>
+  </wires>
+  <measurementOrdering/>
+</circuit>
