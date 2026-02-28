@@ -32,14 +32,14 @@ int valido_r (struct racional r);
 struct racional sorteia_r (long min, long max);
 
 /* Imprime um racional r, respeitando estas regras:
-   - o racional deve ser impresso na forma simplificada;
-   - não imprima espaços em branco e não mude de linha;
-   - a saída deve ter o formato "num/den", a menos dos casos abaixo:
-     - se o racional for inválido, deve imprimir a mensagem "INVALIDO";
-     - se o numerador for 0, deve imprimir somente "0";
-     - se o denominador for 1, deve imprimir somente o numerador;
-     - se o numerador e denominador forem iguais, deve imprimir somente "1";
-     - se o racional for negativo, o sinal "-" deve vir antes do numerador;
+  - o racional deve ser impresso na forma simplificada;
+  - não imprima espaços em branco e não mude de linha;
+  - a saída deve ter o formato "num/den", a menos dos casos abaixo:
+    - se o racional for inválido, deve imprimir a mensagem "INVALIDO";
+    - se o numerador for 0, deve imprimir somente "0";
+    - se o denominador for 1, deve imprimir somente o numerador;
+    - se o numerador e denominador forem iguais, deve imprimir somente "1";
+    - se o racional for negativo, o sinal "-" deve vir antes do numerador;
      - se numerador e denominador forem negativos, o racional é positivo. */
 void imprime_r (struct racional r);
 
