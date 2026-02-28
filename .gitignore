@@ -1,0 +1,20 @@
+# Compilação (Arquivos objeto e bibliotecas)
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+
+# Executáveis (Windows e Linux)
+*.exe
+*.out
+
+# VS code e IDEs
+.vscode/
+.history/
+*.log
+
+# Arquivos temporários de sistema
+.DS_store
+Thumbs.db
