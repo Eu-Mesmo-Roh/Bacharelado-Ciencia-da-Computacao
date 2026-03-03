@@ -115,14 +115,14 @@ struct racional sorteia_r(long min, long max)
 }
 
 /* Imprime um racional r, respeitando estas regras:
-   - o racional deve ser impresso na forma simplificada;
-   - não imprima espaços em branco e não mude de linha;
-   - a saída deve ter o formato "num/den", a menos dos casos abaixo:
-     - se o racional for inválido, imprime a mensagem "NaN" (Not a Number);
-     - se o numerador for 0, imprime somente "0";
-     - se o denominador for 1, imprime somente o numerador;
-     - se o numerador e denominador forem iguais, imprime somente "1";
-     - se o racional for negativo, o sinal "-" vem antes do numerador;
+  - o racional deve ser impresso na forma simplificada;
+  - não imprima espaços em branco e não mude de linha;
+  - a saída deve ter o formato "num/den", a menos dos casos abaixo:
+    - se o racional for inválido, imprime a mensagem "NaN" (Not a Number);
+    - se o numerador for 0, imprime somente "0";
+    - se o denominador for 1, imprime somente o numerador;
+    - se o numerador e denominador forem iguais, imprime somente "1";
+    - se o racional for negativo, o sinal "-" vem antes do numerador;
      - se numerador e denominador forem negativos, o racional é positivo. */
 void imprime_r(struct racional r)
 {
