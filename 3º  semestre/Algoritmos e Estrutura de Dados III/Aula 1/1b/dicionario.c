@@ -17,7 +17,7 @@ typedef struct
     char nome[MAX_CHAR];
     int idade;
     char sexo;
-    int cpf;
+    long cpf;
 }pessoa;
 
 typedef struct
@@ -51,7 +51,7 @@ typedef struct
     return true;
 }
 
-[[nodiscard]] bool remover(dicionario* dict, int cpf)
+[[nodiscard]] bool remover(dicionario* dict, long cpf)
 {
     int esquerda = 0;
     int direita = dict->numItens - 1;
@@ -61,13 +61,13 @@ typedef struct
     {
         int meio = esquerda + (direita - esquerda) / 2;
 
-        if(dict.elementos[meio]->cpf == cpf)
+        if(dict->elementos[meio]->cpf == cpf)
         {
             indice_encontrado = meio;
             break;
         }
 
-        else if (dict.elementos[meio]->cpf < cpf)
+        else if (dict->elementos[meio]->cpf < cpf)
             esquerda = meio + 1; // Busca na metade direita
 
         else
@@ -92,7 +92,7 @@ typedef struct
 
 
 
-[[nodiscard]] pessoa* buscar(dicionario* dict, int cpf)
+[[nodiscard]] pessoa* buscar(dicionario* dict, long cpf)
 {
     int esquerda = 0;
     int direita = dict->numItens - 1;
@@ -134,10 +134,112 @@ int main()
 
         switch (opcao)
         {
-            
-        }
+            case 1:
+            {
+                auto nova_pessoa = (pessoa*)malloc(sizeof(pessoa));
 
+                if (nova_pessoa == nullptr)
+                {
+                    printf("Erro de memoria!\n");
+                    break;
+                }
+
+                printf("\n=== Digite os dados da pessoa ===\n");
+                printf("Nome: ");
+
+                scanf(" %49[^\n]", nova_pessoa->nome); // Lê uma
+
+                printf("Idade: ");
+                scanf("%d", &nova_pessoa->idade);
+
+                printf("Sexo (M/F): ");
+                scanf(" %c", &nova_pessoa->sexo);
+
+                printf("CPF: ");
+                scanf("%ld", &nova_pessoa->cpf);
+
+                if (adicionar(&meuDict, nova_pessoa))
+                    printf("Pessoa adicionada com sucesso!\n");
+                else
+                {
+                    printf("Dicionário cheio! Não foi possível adicionar a pessoa.\n");
+                    free(nova_pessoa); // Libera a memória alocada
+                }
+                break;
+
+            }
+            case 2:
+            {
+                long cpf_remover;
+                printf("\nDigite o CPF da pessoa a remover: ");
+                scanf("%ld", &cpf_remover);
+
+                if (remover(&meuDict, cpf_remover))
+                    printf("Pessoa removida com sucesso!\n");
+
+                else
+                    printf("Pessoa com CPF %ld não encontrada.\n", cpf_remover);
+
+                break;
+            }
+            case 3:
+            {
+                long cpf_buscar;
+
+                printf("\nDigite o CPF da pessoa a buscar: ");
+                scanf("%ld", &cpf_buscar);
+
+                auto resultado = buscar(&meuDict, cpf_buscar);
+                if (resultado != nullptr)
+                {
+                    printf("\nPessoa encontrada:\n");
+                    printf("Nome: %s\n", resultado->nome);
+                    printf("Idade: %d\n", resultado->idade);
+                    printf("Sexo: %c\n", resultado->sexo);
+                    printf("CPF: %ld\n", resultado->cpf);
+                }
+                else
+                    printf("Pessoa com CPF %ld não encontrada.\n", cpf_buscar);
+                
+                break;
+            }
+            case 4:
+            {
+                printf("\n=== Lista de Pessoas Cadastradas ===\n");
+
+                if (meuDict.numItens == 0)
+                {
+                    printf("Nenhuma pessoa cadastrada.\n");
+                }
+                else
+                {
+                    for (size_t i = 0; i < meuDict.numItens; i++)
+                    {
+                        printf("\nPessoa %zu:\n", i + 1);
+                        printf("Nome: %s\n", meuDict.elementos[i]->nome);
+                        printf("Idade: %d\n", meuDict.elementos[i]->idade);
+                        printf("Sexo: %c\n", meuDict.elementos[i]->sexo);
+                        printf("CPF: %ld\n", meuDict.elementos[i]->cpf);
+                    }
+                }
+                break;
+            }
+            case 0:
+                printf("Saindo do programa...\n");
+                break;
+            default:
+                printf("Opção inválida! Por favor, escolha uma opção válida.\n");
+        }
     }
+    while (opcao != 0);
+
+    // Liberar memória alocada
+    for (size_t i = 0; i < meuDict.numItens; i++)
+    {
+        free(meuDict.elementos[i]);
+    }
+
+    return 0;
 }
 
 
