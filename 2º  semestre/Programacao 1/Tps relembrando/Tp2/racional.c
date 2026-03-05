@@ -152,4 +152,97 @@ int compara_r (struct racional r1, struct racional r2)
     return 1;
 }
 
+int soma_r (struct racional r1, struct racional r2, struct racional *r3)
+{
+  struct racional aux;
+
+  long multiplo;
+
+  if(valido_r(r1) == 0 || valido_r(r2) == 0)
+    return 0;
+  
+  else if (r1.den != r2.den)
+  {
+    multiplo = mmc(r1.den, r2.den);
+
+    aux.num = ((multiplo / r1.den) * r1.num) + ((multiplo / r2.den) * r2.num);
+    
+    aux.den = multiplo;
+  }
+
+  else
+  {
+    aux.num = r1.num + r2.num;
+    aux.den = r1.den;
+  }
+
+  *r3 = simplifica_r(aux);
+
+  return 1;
+}
+
+int subtrai_r (struct racional r1, struct racional r2, struct racional *r3)
+{
+  struct racional aux;
+
+  long multiplo;
+
+  if(!valido_r(r1) || !valido_r(r2) || !r3)
+    return 0;
+
+  else if (r1.den != r2.den)
+  {
+    multiplo = mmc(r1.den, r2.den);
+
+    aux.num = ((multiplo / r1.den) * r1.num) - ((multiplo / r2.den) * r2.num);
+
+    aux.den = multiplo;
+  }
+
+  else
+  {
+    aux.num = r1.num - r2.num;
+    aux.den = r1.den;
+  }
+
+  *r3 = simplifica_r(aux);
+
+  return 1;
+}
+
+int multiplica_r (struct racional r1, struct racional r2, struct racional *r3)
+{
+  struct racional aux;
+
+  if(!valido_r(r1) || !valido_r(r2) || !r3)
+    return 0;
+
+  else
+  {
+    aux.num = r1.num * r2.num;
+    aux.den = r1.den * r2.den;
+  }
+
+  *r3 = simplifica_r(aux);
+
+  return 1;
+}
+
+int divide_r (struct racional r1, struct racional r2, struct racional *r3)
+{
+  struct racional aux;
+
+  if (!valido_r(r1) || !valido_r(r2) || !r3 || r2.num == 0)
+    return 0;
+
+  else
+  {
+    aux.num = r1.num * r2.den;
+    aux.den = r1.den * r2.num;
+  }
+
+  *r3 = simplifica_r(aux);
+
+  return 1;
+}
 
