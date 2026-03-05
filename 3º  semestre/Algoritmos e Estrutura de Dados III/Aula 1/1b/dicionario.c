@@ -22,7 +22,7 @@ typedef struct
 
 typedef struct
 {
-    pessoa* elementos[TAM_DICT];
+    pessoa *elementos[TAM_DICT];
     size_t numItens;
 }dicionario;
 
@@ -51,17 +51,58 @@ typedef struct
     return true;
 }
 
-[[nodiscard]] pessoa* buscar(dicionario* dict, int cpf)
+[[nodiscard]] bool remover(dicionario* dict, int cpf)
 {
-    size_t esquerda = 0;
-    size_t direita = dict->numItens;
+    int esquerda = 0;
+    int direita = dict->numItens - 1;
+    int indice_encontrado = -1;
 
     while (esquerda <= direita)
     {
-        size_t meio = esquerda + (direita - esquerda) / 2;
+        int meio = esquerda + (direita - esquerda) / 2;
+
+        if(dict.elementos[meio]->cpf == cpf)
+        {
+            indice_encontrado = meio;
+            break;
+        }
+
+        else if (dict.elementos[meio]->cpf < cpf)
+            esquerda = meio + 1; // Busca na metade direita
+
+        else
+            direita = meio - 1; // Busca na metade esquerda
+    }
+
+    if (indice_encontrado == -1)
+        return false; // Não encontrado
+    
+    free(dict->elementos[indice_encontrado]); // Libera a memória do elemento removido
+
+    for(size_t i = indice_encontrado; i < dict->numItens - 1; i++)
+    {
+        dict->elementos[i] = dict->elementos[i + 1]; // Desloca os elementos para preencher o "buraco"
+    }
+
+    dict->numItens--; // Decrementa o número de itens
+    dict->elementos[dict->numItens] = nullptr; // Opcional: Limpa a última posição
+
+    return true;
+}
+
+
+
+[[nodiscard]] pessoa* buscar(dicionario* dict, int cpf)
+{
+    int esquerda = 0;
+    int direita = dict->numItens - 1;
+
+    while (esquerda <= direita)
+    {
+        int meio = esquerda + (direita - esquerda) / 2;
 
         if (dict->elementos[meio]->cpf == cpf)
-            return dict->elementos[meio]; // Encconditionontrado
+            return dict->elementos[meio]; // Encontrado
 
         else if (dict->elementos[meio]->cpf < cpf)
             esquerda = meio + 1; // Busca na metade direita
@@ -74,6 +115,35 @@ typedef struct
 }
 
 int main()
+{
+    dicionario meuDict = {}; // Inicializa o dicionário vazio
+
+    int opcao;
+
+    do
+    {
+        printf("\n===== MENU DE PESSOAS =====\n");
+        printf("1. Adicionar pessoa\n");
+        printf("2. Remover pessoa\n");
+        printf("3. Buscar pessoa\n");
+        printf("4. Listar pessoas\n");
+        printf("0. Sair\n");
+        printf("==================================");
+        printf("\nEscolha uma opção: ");
+        scanf("%d", &opcao);
+
+        switch (opcao)
+        {
+            
+        }
+
+    }
+}
+
+
+
+
+/* int main()
 {
     dicionario meuDict = {}; // Inicializa o dicionário vazio
 
@@ -130,4 +200,4 @@ int main()
     free(p3);
 
     return 0;
-}
+} */
