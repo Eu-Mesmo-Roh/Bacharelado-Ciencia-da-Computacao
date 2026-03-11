@@ -1,0 +1,2 @@
+Escrevendo no novo arquivo em C.
+adicionando outra linha com fputs.
