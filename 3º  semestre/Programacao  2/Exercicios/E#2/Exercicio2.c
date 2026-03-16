@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 struct nodo 
@@ -95,4 +96,75 @@ struct nodo *removeFim(struct deque *fipi)
         aux->prox = NULL;
     
     return aux;
+}
+
+int main()
+{
+    struct deque meuDeque;
+    meuDeque.inicio = NULL;
+    meuDeque.fim = NULL;
+
+    char *palavra;
+    int tam_max;
+    int ehPalindromo = 1;
+
+    printf("Digite o tamanho máximo da palavra que deseja verificar;\n");
+    scanf("%d", &tam_max);
+
+    palavra = (char *)malloc((tam_max + 1) * sizeof(char));
+
+    if (palavra == NULL) 
+    {
+        printf("Erro ao alocar memória.\n");
+        return 1;
+    }
+
+    printf("Digite  a palavra desejada: ");
+    scanf("%s", palavra);
+
+    for (int i = 0; i < strlen(palavra); i++)
+    {
+        struct nodo *novo = (struct nodo *)malloc(sizeof(struct nodo));
+
+        if (novo == NULL) 
+        {
+            printf("Erro ao alocar memória.\n");
+            return 1;
+        }
+
+        novo->dado = palavra[i];
+        insereFim(&meuDeque, novo);
+    }
+
+    while (meuDeque.inicio != NULL && meuDeque.inicio != meuDeque.fim)
+    {
+        struct nodo *inicio = removeInicio(&meuDeque);
+        struct nodo *fim = removeFim(&meuDeque);
+
+        if (inicio->dado != fim->dado)
+        {
+            ehPalindromo = 0;
+            free(inicio);
+            free(fim);
+            break;
+        }
+
+        free(inicio);
+        free(fim);
+    }
+
+    while (meuDeque.inicio != NULL)
+    {
+        struct nodo *sobra = removeInicio(&meuDeque);
+        free(sobra);
+    }
+
+        if (ehPalindromo)
+            printf("\nA palavra '%s' É um palindromo.\n", palavra);
+        else
+            printf("\nA palavra '%s' NÃO é um palindromo.\n", palavra);
+
+    free(palavra);
+
+    return 0;
 }
