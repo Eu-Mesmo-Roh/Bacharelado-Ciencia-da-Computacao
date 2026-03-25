@@ -1,0 +1,1 @@
+/*ler arquivo binario*/

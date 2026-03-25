@@ -1,0 +1,40 @@
+Manipulação de Arquivos binarios
+
+
+função fread -> serve para a leitura de blocos;
+    função fread()
+    fread(buffer, sizeof(int), 10, file);
+
+função 
+
+
+
+
+
+
+
+Iniciando acesso a posições aleatorias de um Arquivo:
+
+    int fseek(FILE* stream, long int offset, int whence)
+    
+    Esta função prevê três parâmetros:
+
+        *stream: arquivo em que se deseja mover o ponteiro
+        
+        *offset: tamanho do deslocamento, em número de bytes
+        *whence: parâmetro para aplicação do deslocamento 
+         (SEEK_SET, SEEK_END, SEEK_CUR)
+
+
+A função rewind é uma função específica para a movimentação do ponteiro para o inicio do arquivo:
+
+    void rewind (FILE* stream)
+
+
+
+
+
+Existem algumas outras funções de manipulação de arquivos que podem ser interessantes:
+
+    int truncate (const char *path, off_t leng);
+        int ftruncate (int fd, off_t length);
