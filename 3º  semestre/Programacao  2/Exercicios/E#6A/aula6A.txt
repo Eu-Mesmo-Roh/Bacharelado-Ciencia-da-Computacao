@@ -1,0 +1,25 @@
+A main seguida do void ignora todos os parametros apos a função
+int main(void)
+{
+
+}
+
+A main recebe parâmetros diretamente do terminal
+A argc é o número de argumentos passados para o programa, incluindo o nome do programa
+A argv é um array de strings (char*) que contém os argumentos passados para o programa
+
+int main(int argc, char **argv[])
+{
+
+}
+
+
+int main(int argc, char *argv[])
+{
+
+}
+
+int main(int argc, char **argv, char **envp)
+{
+
+}
