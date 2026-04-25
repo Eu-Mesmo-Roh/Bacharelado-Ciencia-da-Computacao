@@ -7,4 +7,3 @@
 void format_date(time_t t, char *buffer, int max);
 
 #endif
-

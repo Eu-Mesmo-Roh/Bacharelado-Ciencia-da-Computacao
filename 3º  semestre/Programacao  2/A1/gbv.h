@@ -21,12 +21,22 @@ typedef struct {
 } Library;
 
 // Funções que voce deve implementar em gbv.c
+
+// Função para criar um novo arquivo de biblioteca
 int gbv_create(const char *filename);
+
+// Função para abrir a biblioteca e carregar o diretório para a memoria
 int gbv_open(Library *lib, const char *filename);
+
+// Função para adicionar um documento à biblioteca
 int gbv_add(Library *lib, const char *archive, const char *docname);
+
 int gbv_remove(Library *lib, const char *docname);
 int gbv_list(const Library *lib);
+
+// Função para visualizar o conteúdo de um documento específico
 int gbv_view(const Library *lib, const char *docname);
+
 int gbv_order(Library *lib, const char *archive, const char *criteria);
 
 #endif
