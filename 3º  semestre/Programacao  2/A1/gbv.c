@@ -25,6 +25,7 @@ int gbv_create(const char *filename)
     return 0; // Sucesso
 }
 
+
 int gbv_open(Library *lib, const char *filename)
 {
     strncpy(container_atual, filename, MAX_NAME - 1);
@@ -74,6 +75,7 @@ int gbv_open(Library *lib, const char *filename)
     fclose(arquivo);
     return 0; // Sucesso
 }
+
 
 int gbv_add(Library *lib, const char *archive, const char *docname)
 {
@@ -164,6 +166,71 @@ int gbv_add(Library *lib, const char *archive, const char *docname)
     return 0; // Sucesso
 }
 
+
+int gbv_remove(Library *lib, const char *docname)
+{
+    int index = -1;
+
+    for(int i = 0; i < lib->count; i++)
+    {
+        if(strcmp(lib->docs[i].name, docname) == 0)
+        {
+            index = i;
+            break;
+        }
+    }
+
+    if(index == -1)
+    {
+        printf("Documento %s não encontrado na biblioteca.\n", docname);
+        return -1; // Documento não encontrado
+    }
+
+    // Desloca todos os elementos à direita do do removido uma posição para a esquerda
+    for(int i = index; i < lib->count; i++)
+        lib->docs[i] = lib->docs[i + 1];
+    
+    lib->count--;
+
+    // Reduz o tamanho do vetor de documentos
+    if(lib->count > 0)
+        lib->docs = (Document *)realloc(lib->docs, lib->count * sizeof(Document));
+    else
+    {
+        free(lib->docs);
+        lib->docs = NULL;
+    }
+
+    // Atualiza o arquivo (Superbloco e Diretorio)
+    FILE *arquivo = fopen(container_atual, "rb+");
+
+    if(!arquivo)
+        return -1;
+
+    int count_antigo;
+    long diretorio;
+
+    fread(&count_antigo, sizeof(int), 1, arquivo);
+    fread(&diretorio, sizeof(long), 1, arquivo);
+
+    // Atualiza apenas a contagem
+    fseek(arquivo, 0, SEEK_SET);
+    fwrite(&lib->count, sizeof(int), 1, arquivo);
+
+    // Reescreve o diretório
+    if(lib->count > 0)
+    {
+        fseek(arquivo, diretorio, SEEK_SET);
+        fwrite(lib->docs, sizeof(Document), lib->count, arquivo);
+    }
+
+    fclose(arquivo);
+    printf("Documento %s removido com sucesso.\n", docname);
+
+    return 0; // Sucesso
+}
+
+
 int gbv_list(const Library *lib)
 {
     if(lib->count == 0)
@@ -185,9 +252,6 @@ int gbv_list(const Library *lib)
     return 0; // Sucesso
 }
 
-
-//int gbv_remove(Library *lib, const char *docname)
-//int gbv_list(const Library *lib)
 
 int gbv_view(const Library *lib, const char *docname)
 {
@@ -286,4 +350,78 @@ int gbv_view(const Library *lib, const char *docname)
     return 0; // Sucesso
 }
 
-//int gbv_order(Library *lib, const char *archive, const char *criteria)
+//Funções para ajudar na ordenação
+static int comparar_nome(const void *a, const void *b)
+{
+    Document *docA = (Document *)a;
+    Document *docB = (Document *)b;
+
+    // O strcmp retorna <0 se docA < docB, 0 se iguais, >0 se docA > docB
+    return strcmp(docA->name, docB->name);
+}
+
+static int comparar_tamanho(const void *a, const void *b)
+{
+    Document *docA = (Document *)a;
+    Document *docB = (Document *)b;
+
+    // Retorna negativo se docA < docB, 0 se iguais, positivo se docA > docB
+    return (docA->size - docB->size);
+}
+
+static int comparar_data(const void *a, const void *b)
+{
+    Document *docA = (Document *)a;
+    Document *docB = (Document *)b;
+
+    // Retorna negativo se A for mais antigo que B
+    return (docA->date - docB->date);
+}
+//Fim das funções de comparação
+
+
+int gbv_order(Library *lib, const char *archive, const char *criteria)
+{
+    if(lib->count == 0)
+    {
+        printf("A biblioteca está vazia. Nada para ordenar.\n");
+        return 0; // Sucesso, mas sem documentos
+    }
+
+    // Escolhe a função de comparação com base no critério
+    if(strcmp(criteria, "nome") == 0)
+        qsort(lib->docs, lib->count, sizeof(Document), comparar_nome);
+    else if(strcmp(criteria, "tamanho") == 0)
+        qsort(lib->docs, lib->count, sizeof(Document), comparar_tamanho);
+    else if(strcmp(criteria, "data") == 0)
+        qsort(lib->docs, lib->count, sizeof(Document), comparar_data);
+    else
+    {
+        printf("Erro: Critério '%s' invalido. Use: nome, tamanho ou data.\n", criteria);
+        return -1; // Critério inválido
+    }
+
+    // Após ordenar o vetor em memória, reescreve o diretório no arquivo
+    FILE *arquivo = fopen(archive, "rb+");
+
+    if(!arquivo)
+        return -1;
+    
+    int count;
+    long diretorio;
+
+    // Lê o super bloco para obter o inicio do diretório
+    fread(&count, sizeof(int), 1, arquivo);
+    fread(&diretorio, sizeof(long), 1, arquivo);
+
+    // Escreve o diretório ordenado no arquivo
+    fseek(arquivo, diretorio, SEEK_SET);
+    fwrite(lib->docs, sizeof(Document), lib->count, arquivo);
+
+    fclose(arquivo);
+    printf("Documentos ordenados por %s com sucesso.\n", criteria);
+
+    gbv_list(lib); // Exibe a lista ordenada
+
+    return 0; // Sucesso
+}

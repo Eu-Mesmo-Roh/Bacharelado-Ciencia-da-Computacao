@@ -31,12 +31,16 @@ int gbv_open(Library *lib, const char *filename);
 // Função para adicionar um documento à biblioteca
 int gbv_add(Library *lib, const char *archive, const char *docname);
 
+// Função para remover um documento da biblioteca
 int gbv_remove(Library *lib, const char *docname);
+
+// Função para listar os documentos na biblioteca
 int gbv_list(const Library *lib);
 
 // Função para visualizar o conteúdo de um documento específico
 int gbv_view(const Library *lib, const char *docname);
 
+// Função para ordenar os documentos da biblioteca por um critério específico
 int gbv_order(Library *lib, const char *archive, const char *criteria);
 
 #endif
