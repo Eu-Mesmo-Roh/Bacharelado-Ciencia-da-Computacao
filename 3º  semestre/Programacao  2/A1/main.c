@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "gbv.h"
 
@@ -33,8 +34,13 @@ int main(int argc, char *argv[]) {
         gbv_order(&lib, biblioteca, argv[3]);
     } else {
         printf("Opção inválida.\n");
+    }   
+
+    // Libera a memória dinâmica alocada para os documentos
+    if (lib.docs != NULL) {
+        free(lib.docs);
+        lib.docs = NULL; // Zera o ponteiro para evitar dangling pointers
     }
 
     return 0;
 }
-

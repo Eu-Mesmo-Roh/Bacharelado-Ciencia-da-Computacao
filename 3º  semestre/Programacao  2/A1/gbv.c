@@ -77,93 +77,167 @@ int gbv_open(Library *lib, const char *filename)
 }
 
 
+
+// Função auxiliar recebe o FILE* já aberto. O [[nodiscard]] do C23 garante que o retorno seja verificado.
+static int realocar_conteudo(Library *lib, FILE *arquivo, int index, long tamanho_novo, long tamanho_velho)
+{
+    long delta = tamanho_novo - tamanho_velho;
+
+    if (delta == 0) return 0; // Sem necessidade de realocação
+
+    long inicio_empurrao;
+    if (index < lib->count - 1)
+        inicio_empurrao = lib->docs[index + 1].offset; 
+    else
+        inicio_empurrao = lib->docs[index].offset + lib->docs[index].size; 
+
+    fseek(arquivo, 0, SEEK_END);
+    long fim_arquivo = ftell(arquivo);
+    long bytes_para_empurrar = fim_arquivo - inicio_empurrao;
+
+    char buffer[BUFFER_SIZE];
+
+    if (delta > 0) {
+        long bytes_restantes = bytes_para_empurrar;
+        long pos_leitura = fim_arquivo;
+
+        while (bytes_restantes > 0) {
+            long tamanho_bloco = (bytes_restantes < BUFFER_SIZE) ? bytes_restantes : BUFFER_SIZE;
+            
+            pos_leitura -= tamanho_bloco;
+            fseek(arquivo, pos_leitura, SEEK_SET);
+            fread(buffer, 1, tamanho_bloco, arquivo);
+
+            fseek(arquivo, pos_leitura + delta, SEEK_SET);
+            fwrite(buffer, 1, tamanho_bloco, arquivo);
+
+            bytes_restantes -= tamanho_bloco;
+        }
+    } else if (delta < 0) {
+        long bytes_lidos_total = 0;
+        long pos_leitura = inicio_empurrao;
+
+        while (bytes_lidos_total < bytes_para_empurrar) {
+            long tamanho_bloco = ((bytes_para_empurrar - bytes_lidos_total) < BUFFER_SIZE) ? 
+                                (bytes_para_empurrar - bytes_lidos_total) : BUFFER_SIZE;
+            
+            fseek(arquivo, pos_leitura, SEEK_SET);
+            fread(buffer, 1, tamanho_bloco, arquivo);
+
+            fseek(arquivo, pos_leitura + delta, SEEK_SET);
+            fwrite(buffer, 1, tamanho_bloco, arquivo);
+
+            pos_leitura += tamanho_bloco;
+            bytes_lidos_total += tamanho_bloco;
+        }
+    }
+
+    // Atualiza os offsets dos vizinhos (o do próprio index será mantido)
+    for (int i = index + 1; i < lib->count; i++)
+        lib->docs[i].offset += delta;
+    
+    return 0; // Retorna sucesso
+}
+
 int gbv_add(Library *lib, const char *archive, const char *docname)
 {
-    // Abre o documento de origem para leitura
-    FILE *doc = fopen(docname, "rb");
-    if(!doc)
+    if(strcmp(archive, docname) == 0)
     {
-        printf("Erro ao abrir documento %s\n", docname);
-        return -1; // Erro ao abrir o documento
+        printf("Erro: O nome do documento não pode ser igual ao nome da biblioteca.\n");
+        return 0;
     }
 
-    // Abre a biblioteca para leitura e escrita
+    FILE *doc = fopen(docname, "rb");
+    if (!doc) {
+        printf("Erro ao abrir documento %s\n", docname);
+        return -1;
+    }
+
+    // OBTÉM O TAMANHO E VOLTA O CURSOR PRO COMEÇO!
+    fseek(doc, 0, SEEK_END);
+    long tam_doc = ftell(doc); 
+    rewind(doc); 
+
     FILE *arquivo = fopen(archive, "rb+");
-    if(!arquivo)
-    {
+    if (!arquivo) {
         fclose(doc);
         printf("Erro ao abrir biblioteca %s\n", archive);
-        return -1; // Erro ao abrir a biblioteca
+        return -1; 
     }
 
-    // Lê o super bloco para saber onde o diretório começa
     int count = 0;
     long diretorio = 0;
     fread(&count, sizeof(int), 1, arquivo);
     fread(&diretorio, sizeof(long), 1, arquivo);
 
-    // Verifica se o documento já existe na biblioteca
     int index = -1;
-    for(int i = 0; i < lib->count; i++)
-    {
-        if (strcmp(lib->docs[i].name, docname) == 0)
-        {
+    for (int i = 0; i < lib->count; i++) {
+        if (strcmp(lib->docs[i].name, docname) == 0) {
             index = i;
             break;
         }
     }
 
-    // Move o ponteiro para o offset do diretorio antigo (para sobrescreve-lo)
-    fseek(arquivo, diretorio, SEEK_SET);
-    long novo_documento = diretorio; // O novo diretório começa aqui
+    long offset_destino;
 
-    // Copia os dados respeitando o limite rígido de buffer
-    char buffer[BUFFER_SIZE];
-    size_t bytes_lidos;
-    long tam_doc = 0;
+    if (index != -1) {
+        // --- SUBSTITUIÇÃO FÍSICA ---
+        offset_destino = lib->docs[index].offset; 
+        
+        if (tam_doc != lib->docs[index].size) {
+            // Passa o arquivo já aberto e verifica a realocação
+            if (realocar_conteudo(lib, arquivo, index, tam_doc, lib->docs[index].size) != 0) {
+                fclose(doc);
+                fclose(arquivo);
+                return -1; 
+            }
+        }
 
-    while ((bytes_lidos = fread(buffer, 1, BUFFER_SIZE, doc)) > 0)
-    {
-        fwrite(buffer, 1, bytes_lidos, arquivo);
-        tam_doc += bytes_lidos;
-    }
-    fclose(doc);
-
-    // O novo diretório vai começar após os dados do documento
-    long novo_diretorio = novo_documento + tam_doc;
-
-    // Atualiza o super bloco com o novo diretório
-    if(index != -1)
-    {
-        // Documento já existe, atualiza o metadado
         lib->docs[index].size = tam_doc;
         lib->docs[index].date = time(NULL);
-        lib->docs[index].offset = novo_documento;    
-    }
-    else
-    {
-        // Novo documento, adiciona ao vetor e atualiza o count
-        lib->docs = (Document *)realloc(lib->docs, (lib->count +1) * sizeof(Document));
+        // O offset original é preservado
+    } else {
+        // --- INSERÇÃO DE NOVO DOCUMENTO ---
+        offset_destino = diretorio; 
+
+        lib->docs = (Document *)realloc(lib->docs, (lib->count + 1) * sizeof(Document));
         strncpy(lib->docs[lib->count].name, docname, MAX_NAME - 1);
-        lib->docs[lib->count].name[MAX_NAME - 1] = '\0'; // Garantir terminação nula
+        lib->docs[lib->count].name[MAX_NAME - 1] = '\0'; 
         lib->docs[lib->count].size = tam_doc;
-        lib->docs[lib->count].date = time(NULL);
-        lib->docs[lib->count].offset = novo_documento;
+        lib->docs[lib->count].date = time(NULL); // C23
+        lib->docs[lib->count].offset = offset_destino;
         lib->count++;
     }
 
-    // Escreve o diretorio atualizado no novo final do arquivo
-    fseek(arquivo, novo_diretorio, SEEK_SET);
-    fwrite(lib->docs, sizeof(Document), lib->count, arquivo);
+    // Grava o conteúdo do arquivo novo no espaço garantido
+    fseek(arquivo, offset_destino, SEEK_SET);
+    char buffer[BUFFER_SIZE];
+    size_t bytes_lidos;
+    while ((bytes_lidos = fread(buffer, 1, BUFFER_SIZE, doc)) > 0) {
+        fwrite(buffer, 1, bytes_lidos, arquivo);
+    }
+    fclose(doc);
 
-    // Atualiza o super bloco com o novo count e novo diretorio
+    // O novo diretório SEMPRE vai começar logo após o fim físico do último documento armazenado
+    long novo_diretorio = sizeof(int) + sizeof(long);
+    for (int i = 0; i < lib->count; i++) {
+        long fim_deste_arquivo = lib->docs[i].offset + lib->docs[i].size;
+        if (fim_deste_arquivo > novo_diretorio) {
+            novo_diretorio = fim_deste_arquivo;
+        }
+    }
+    
+    // Atualiza o superbloco
     fseek(arquivo, 0, SEEK_SET);
     fwrite(&lib->count, sizeof(int), 1, arquivo);
     fwrite(&novo_diretorio, sizeof(long), 1, arquivo);
 
-    fclose(arquivo);
-    printf("Documento %s adicionado com sucesso.\n", docname);
-    return 0; // Sucesso
+    // Reescreve o diretório na nova posição
+    fseek(arquivo, novo_diretorio, SEEK_SET);
+    fwrite(lib->docs, sizeof(Document), lib->count, arquivo);
+
+    printf("Documento %s adicionado/substituido com sucesso.\n", docname);
+    return 0; 
 }
 
 
@@ -318,6 +392,8 @@ int gbv_view(const Library *lib, const char *docname)
 
         // Lê e imprime o bloco
         size_t bytes_lidos = fread(buffer, 1, bytes_para_ler, arquivo);
+        
+        printf("\ec"); 
 
         printf("\n=== %s (Bloco %ld de %ld) ===\n", docname, bloco_atual + 1, total_blocos);
         for(size_t i = 0; i < bytes_lidos; i++) {

@@ -26,7 +26,7 @@ typedef struct {
 int gbv_create(const char *filename);
 
 // Função para abrir a biblioteca e carregar o diretório para a memoria
-int gbv_open(Library *lib, const char *filename);
+int gbv_open(Library *lib, const char *filename); 
 
 // Função para adicionar um documento à biblioteca
 int gbv_add(Library *lib, const char *archive, const char *docname);
