@@ -98,6 +98,10 @@ static int realocar_conteudo(Library *lib, FILE *arquivo, int index, long tamanh
     char buffer[BUFFER_SIZE];
 
     if (delta > 0) {
+        // --- EXPANSÃO DO ARQUIVO ---
+        // Se o arquivo novo é maior, precisamos empurrar os dados para a DIREITA.
+        // É obrigatório ler e escrever de TRÁS PARA FRENTE para não sobrescrever
+        // os dados que ainda não foram movidos (evitando corrupção).
         long bytes_restantes = bytes_para_empurrar;
         long pos_leitura = fim_arquivo;
 
@@ -114,6 +118,9 @@ static int realocar_conteudo(Library *lib, FILE *arquivo, int index, long tamanh
             bytes_restantes -= tamanho_bloco;
         }
     } else if (delta < 0) {
+        // --- REDUÇÃO DO ARQUIVO ---
+        // Se o arquivo novo é menor, puxamos os dados para a ESQUERDA.
+        // Aqui é seguro ler normalmente da esquerda para a direita.
         long bytes_lidos_total = 0;
         long pos_leitura = inicio_empurrao;
 
@@ -132,7 +139,7 @@ static int realocar_conteudo(Library *lib, FILE *arquivo, int index, long tamanh
         }
     }
 
-    // Atualiza os offsets dos vizinhos (o do próprio index será mantido)
+    // Atualiza os offsets dos vizinhos na RAM (o do próprio index será mantido)
     for (int i = index + 1; i < lib->count; i++)
         lib->docs[i].offset += delta;
     
@@ -153,7 +160,8 @@ int gbv_add(Library *lib, const char *archive, const char *docname)
         return -1;
     }
 
-    // OBTÉM O TAMANHO E VOLTA O CURSOR PRO COMEÇO!
+    // OBTÉM O TAMANHO E VOLTA O CURSOR PRO COMEÇO
+    // fseek vai para o fim, ftell pega a posição (tamanho em bytes) e rewind volta ao início.
     fseek(doc, 0, SEEK_END);
     long tam_doc = ftell(doc); 
     rewind(doc); 
@@ -182,8 +190,10 @@ int gbv_add(Library *lib, const char *archive, const char *docname)
 
     if (index != -1) {
         // --- SUBSTITUIÇÃO FÍSICA ---
+        // Arquivo já existe, pegamos onde ele começa fisicamente
         offset_destino = lib->docs[index].offset; 
         
+        // Só realoca o espaço do container se o tamanho do arquivo mudou
         if (tam_doc != lib->docs[index].size) {
             // Passa o arquivo já aberto e verifica a realocação
             if (realocar_conteudo(lib, arquivo, index, tam_doc, lib->docs[index].size) != 0) {
@@ -198,18 +208,19 @@ int gbv_add(Library *lib, const char *archive, const char *docname)
         // O offset original é preservado
     } else {
         // --- INSERÇÃO DE NOVO DOCUMENTO ---
+        // Se é novo, ele entra exatamente onde o diretório começava
         offset_destino = diretorio; 
 
         lib->docs = (Document *)realloc(lib->docs, (lib->count + 1) * sizeof(Document));
         strncpy(lib->docs[lib->count].name, docname, MAX_NAME - 1);
         lib->docs[lib->count].name[MAX_NAME - 1] = '\0'; 
         lib->docs[lib->count].size = tam_doc;
-        lib->docs[lib->count].date = time(NULL); // C23
+        lib->docs[lib->count].date = time(NULL); 
         lib->docs[lib->count].offset = offset_destino;
         lib->count++;
     }
 
-    // Grava o conteúdo do arquivo novo no espaço garantido
+    // Grava o conteúdo do arquivo novo no espaço garantido (respeitando o limite do buffer)
     fseek(arquivo, offset_destino, SEEK_SET);
     char buffer[BUFFER_SIZE];
     size_t bytes_lidos;
@@ -218,7 +229,10 @@ int gbv_add(Library *lib, const char *archive, const char *docname)
     }
     fclose(doc);
 
-    // O novo diretório SEMPRE vai começar logo após o fim físico do último documento armazenado
+    // --- CÁLCULO DO NOVO DIRETÓRIO ---
+    // Como os arquivos podem ser reordenados na RAM (gbv_order), o último arquivo físico 
+    // gravado no disco pode não ser o último elemento do vetor lib->docs.
+    // O loop varre todos para achar o ponto mais distante e gravar o diretório lá.
     long novo_diretorio = sizeof(int) + sizeof(long);
     for (int i = 0; i < lib->count; i++) {
         long fim_deste_arquivo = lib->docs[i].offset + lib->docs[i].size;
@@ -260,7 +274,7 @@ int gbv_remove(Library *lib, const char *docname)
         return -1; // Documento não encontrado
     }
 
-    // Desloca todos os elementos à direita do do removido uma posição para a esquerda
+    // Desloca todos os elementos à direita do removido uma posição para a esquerda na RAM.
     for(int i = index; i < lib->count; i++)
         lib->docs[i] = lib->docs[i + 1];
     
@@ -390,11 +404,13 @@ int gbv_view(const Library *lib, const char *docname)
                 bytes_para_ler = BUFFER_SIZE;
         }
 
-        // Lê e imprime o bloco
+        // Lê o bloco do disco
         size_t bytes_lidos = fread(buffer, 1, bytes_para_ler, arquivo);
         
+        // Sequência de escape ANSI para limpar a tela do terminal e mover o cursor pro topo
         printf("\ec"); 
 
+        // Imprime o cabeçalho e o conteúdo lido
         printf("\n=== %s (Bloco %ld de %ld) ===\n", docname, bloco_atual + 1, total_blocos);
         for(size_t i = 0; i < bytes_lidos; i++) {
             putchar(buffer[i]);
@@ -426,7 +442,10 @@ int gbv_view(const Library *lib, const char *docname)
     return 0; // Sucesso
 }
 
-//Funções para ajudar na ordenação
+// =========================================================================
+// Funções Auxiliares de Ordenação
+// =========================================================================
+
 static int comparar_nome(const void *a, const void *b)
 {
     Document *docA = (Document *)a;
