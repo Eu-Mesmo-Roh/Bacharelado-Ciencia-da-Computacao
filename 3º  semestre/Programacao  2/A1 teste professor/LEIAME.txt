@@ -1,0 +1,32 @@
+// Autoria \\
+Aluno: Ronaldo Pereira da Costa
+GRR: 20240514
+
+// Lista de Arquivos \\
+gbv.c: Contendo a implementação das funções.
+gbv.h: Arquivo de cabeçalho com as assinaturas das funções e a definição das estruturas.
+util.c e util.h: Arquivos contendo as funções e definições auxiliares utilizadas.
+Makefile: Script para compilação e limpeza do projeto.
+Main.c: Contendo a execução do código
+LEIAME: Este arquivo descritivo.
+
+// Dificuldades Enfrentadas + Bugs Conhecidos \\
+
+# Novas funções para o A1:
+No começo, tive um pouco de dificuldade para me acostumar com as funções de manipulação de strings e de arquivos binários (como fread e fwrite), mas com a prática, a lógica foi ficando muito mais natural.
+
+# Limite de Buffer de 512 bytes: 
+Ter que ler e escrever tudo em "pedacinhos" de no máximo 512 bytes deu um certo trabalho. Como não dava para jogar um arquivo grande inteiro na memória de uma vez, precisei fazer laços de repetição. Isso garantiu que tanto a cópia dos arquivos quanto a visualização paginada funcionassem, sem estourar a memória.
+
+
+#. Substituição Física de Bytes: 
+Essa foi, de longe, a parte mais difícil de implementar! Quando a gente substitui um arquivo por uma versão mais pesada, é preciso empurrar todo o resto do arquivo .gbv para a direita para abrir espaço. O problema é que, se você ler e copiar da esquerda para a direita, acaba sobrescrevendo os próprios dados. A solução foi implementar uma lógica que lê e empurra os blocos de trás para frente usando fseek.
+
+
+#. Reordenação e Encapsulamento:
+Para fazer a ordenação -o, a melhor saída foi usar a função Quicksort do próprio C. O desafio aqui foi montar as funções de comparação (nome, tamanho e data) de um jeito limpo. Coloquei todas elas como static direto no gbv.c para manter o código encapsulado.
+
+
+// Bugs Conhecidos \\
+O programa está rodando bem, sem falhas de segmentação nas operações pedidas.
+Sobre a memória: O gerenciamento de memória dentro do gbv.c não esta com vazamentos durante a execução. O Valgrind acusa apenas "Still Reachable" no final. Aparentemente isso esta acontecendo porque a main.c (que craio que não podíamos alterar) termina e dá return 0 sem chamar nenhuma função para liberar o ponteiro da biblioteca na saída.
