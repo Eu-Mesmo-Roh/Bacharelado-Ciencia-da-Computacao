@@ -3,34 +3,21 @@
 #include <string.h>
 #include "gbv.h"
 
-#define CHAVE_SEGURANÇA "1234"
 
 int main(int argc, char *argv[]) {
-    //Sobe a quantidade de argumentos para 4
     if (argc < 4) {
-        printf("Uso: %s <opção> <biblioteca> [documentos...]\n", argv[0]);
+        printf("Uso: %s <chave> <opção> <biblioteca> [documentos...]\n", argv[0]);
         return 1;
     }
 
-    //testa se a chave tem 4 caracteres
-    char *chave = argv[1];
-    if (strlen(chave) != 4)
-    {
-        printf("A chave de segurança deve conter 4 caracteres");
-        return 1;
-    }
-
-    if(strcmp(chave, CHAVE_SEGURANÇA) != 0)
-    {
-        printf("Chave de segurança incorreta");
-        return 1;
-    }
-
+    //(novo)passando a chave de segurança como argumento
+    const char *chave = argv[1];
     const char *opcao = argv[2];
     const char *biblioteca = argv[3];
 
+
     Library lib;
-    if (gbv_open(&lib, biblioteca) != 0) {
+        if (gbv_open(&lib, biblioteca, chave) != 0) {
         printf("Erro ao abrir biblioteca %s\n", biblioteca);
         return 1;
     }

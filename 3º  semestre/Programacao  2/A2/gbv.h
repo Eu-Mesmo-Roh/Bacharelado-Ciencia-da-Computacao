@@ -5,6 +5,8 @@
 
 #define MAX_NAME 256
 #define BUFFER_SIZE 512   // tamanho fixo do buffer em bytes
+//(novo) define o tamanho da chave de segurança, que é fixa em 4 bytes
+#define CHAVE_SIZE 4
 
 // Estrutura de metadados de cada documento
 typedef struct {
@@ -22,11 +24,11 @@ typedef struct {
 
 // Funções que voce deve implementar em gbv.c
 
-// Função para criar um novo arquivo de biblioteca
-int gbv_create(const char *filename);
+// Função para criar um novo arquivo de biblioteca //(novo) passa como parametro a chave de segurança
+int gbv_create(const char *filename, const char *chave);
 
-// Função para abrir a biblioteca e carregar o diretório para a memoria
-int gbv_open(Library *lib, const char *filename); 
+// Função para abrir a biblioteca e carregar o diretório para a memoria //(novo) passa como parametro a chave de segurança
+int gbv_open(Library *lib, const char *filename, const char *chave); 
 
 // Função para adicionar um documento à biblioteca
 int gbv_add(Library *lib, const char *archive, const char *docname);

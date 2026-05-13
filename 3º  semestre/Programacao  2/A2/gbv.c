@@ -7,15 +7,21 @@
 // Variável estática para guardar o nome do container aberto, para ser usada em outras funções
 static char container_atual[MAX_NAME] = "";
 
-int gbv_create(const char *filename)
+int gbv_create(const char *filename, const char *chave)
 {
     FILE *arquivo = fopen(filename, "wb");
     if(!arquivo)
         return -1; // Erro ao criar o arquivo
     
+    // (novo)Escreve a chave de segurança nos primeiros 4 bytes do arquivo
+    char chave_buffer[CHAVE_SIZE] = {0};
+    strncpy(chave_buffer, chave, CHAVE_SIZE);
+    fwrite(chave_buffer, CHAVE_SIZE, 1, arquivo);
+    
     int count = 0;
 
-    long diretorio = sizeof(int) + sizeof(long); // espaço para count e diretorio
+    // (novo)O diretório começa após a chave + count + diretorio
+    long diretorio = CHAVE_SIZE + sizeof(int) + sizeof(long);
 
     // Escreve o super bloco
     fwrite(&count, sizeof(int), 1, arquivo);
@@ -26,7 +32,7 @@ int gbv_create(const char *filename)
 }
 
 
-int gbv_open(Library *lib, const char *filename)
+int gbv_open(Library *lib, const char *filename, const char *chave)
 {
     strncpy(container_atual, filename, MAX_NAME - 1);
 
@@ -36,17 +42,31 @@ int gbv_open(Library *lib, const char *filename)
     if(!arquivo)
     {
         // Se o arquivo não existe, cria um novo
-        if(gbv_create(filename) != 0)
+        if(gbv_create(filename, chave) != 0)
             return -1; // Erro ao criar a biblioteca
         arquivo = fopen(filename, "rb+");
         if(!arquivo)
             return -1; // Erro ao abrir a biblioteca
     }
 
+    // (novo) Recebe e verifica a chave nos primeiros 4 bytes
+    char chave_seguranca[CHAVE_SIZE];
+    fread(chave_seguranca, CHAVE_SIZE, 1, arquivo);
+    
+    char chave_buffer[CHAVE_SIZE] = {0};
+    strncpy(chave_buffer, chave, CHAVE_SIZE);
+    
+    if (memcmp(chave_seguranca, chave_buffer, CHAVE_SIZE) != 0) 
+    {
+        fclose(arquivo);
+        printf("Erro: Chave de segurança inválida para a biblioteca\n");
+        return -1; // Chave inválida
+    }
+
     int count = 0;
     long diretorio = 0;
 
-    // Lê o super bloco
+    // Lê o super bloco (após a chave)
     fread(&count, sizeof(int), 1, arquivo);
     fread(&diretorio, sizeof(long), 1, arquivo);
 
@@ -55,7 +75,6 @@ int gbv_open(Library *lib, const char *filename)
     // Aloca memória para os documentos
     if(count > 0)
     {
-        //Aloca memória para os documentos
         lib->docs = (Document *)malloc(count * sizeof(Document));
         if(!lib->docs)
         {
@@ -78,7 +97,7 @@ int gbv_open(Library *lib, const char *filename)
 
 
 
-// Função auxiliar recebe o FILE* já aberto. O [[nodiscard]] do C23 garante que o retorno seja verificado.
+// Função auxiliar recebe o FILE* já aberto.
 static int realocar_conteudo(Library *lib, FILE *arquivo, int index, long tamanho_novo, long tamanho_velho)
 {
     long delta = tamanho_novo - tamanho_velho;
@@ -173,8 +192,11 @@ int gbv_add(Library *lib, const char *archive, const char *docname)
         return -1; 
     }
 
+    fseek(arquivo, CHAVE_SIZE, SEEK_SET);
+
     int count = 0;
     long diretorio = 0;
+    fseek(arquivo, CHAVE_SIZE, SEEK_SET);
     fread(&count, sizeof(int), 1, arquivo);
     fread(&diretorio, sizeof(long), 1, arquivo);
 
@@ -233,7 +255,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname)
     // Como os arquivos podem ser reordenados na RAM (gbv_order), o último arquivo físico 
     // gravado no disco pode não ser o último elemento do vetor lib->docs.
     // O loop varre todos para achar o ponto mais distante e gravar o diretório lá.
-    long novo_diretorio = sizeof(int) + sizeof(long);
+    long novo_diretorio = CHAVE_SIZE + sizeof(int) + sizeof(long);
     for (int i = 0; i < lib->count; i++) {
         long fim_deste_arquivo = lib->docs[i].offset + lib->docs[i].size;
         if (fim_deste_arquivo > novo_diretorio) {
@@ -242,7 +264,7 @@ int gbv_add(Library *lib, const char *archive, const char *docname)
     }
     
     // Atualiza o superbloco
-    fseek(arquivo, 0, SEEK_SET);
+    fseek(arquivo, CHAVE_SIZE, SEEK_SET);
     fwrite(&lib->count, sizeof(int), 1, arquivo);
     fwrite(&novo_diretorio, sizeof(long), 1, arquivo);
 
@@ -294,6 +316,8 @@ int gbv_remove(Library *lib, const char *docname)
 
     if(!arquivo)
         return -1;
+
+    fseek(arquivo, CHAVE_SIZE, SEEK_SET);
 
     int count_antigo;
     long diretorio;
@@ -502,6 +526,8 @@ int gbv_order(Library *lib, const char *archive, const char *criteria)
     if(!arquivo)
         return -1;
     
+    fseek(arquivo, CHAVE_SIZE, SEEK_SET);
+
     int count;
     long diretorio;
 
