@@ -61,7 +61,7 @@ struct nodo* buscarArvoreB (struct arvoreB* arvore, int32_t chave,
 void liberarNodos(struct nodo* atual);
 
 // função auxiliar para realizar a exclusão de forma recursiva
-bool removerChaveArvoreBrec (struct nodo *atual, int32_t chave);
+bool removerChaveArvoreBrec (struct arvoreB *arvore, struct nodo *atual, int32_t chave);
 
 // função que faz a deleção de uma chave da arvore, retornando true em caso de sucesso ou false caso a chave não exista
 bool removerChaveArvoreB(struct arvoreB* arvore, int32_t chave);

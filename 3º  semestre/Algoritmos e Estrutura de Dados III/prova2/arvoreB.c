@@ -287,33 +287,54 @@ void deletarArvore(struct arvoreB* arvore){
     free(arvore);
 }    
 
-bool removerChaveArvoreBrec (struct nodo *atual, int32_t chave){
+bool removerChaveArvoreBrec (struct arvoreB *arvore, struct nodo *atual, int32_t chave){
+    int indice, indice_pre;
+    struct nodo *aux_pre; //Nodo para encontrar o predecessor
 
-    // Lista de casos //
+    if (!atual)
+        return false;
+
+    indice = 1;
+
+    // Lista de casos
 
     // caso 1 a chave esta na folha ou não existe
-    for (int i = 1; i <= atual->n_chaves && chave > atual->chaves[i]; i++)
+    while (indice <= atual->n_chaves && chave > atual->chaves[indice])
+        indice++;
         
-    if (i <= atual->n_chaves && chave == atual->chaves[i]){
+    if (indice <= atual->n_chaves && chave == atual->chaves[indice]){
         if (atual->eh_folha){
             // remove a chave do nodo***************
-            // return;
+            return true;
         }
-/*         else{
-            if(atual->filhos[i]->n_chaves >= )
+
+        else{
+            if(atual->filhos[indice]->n_chaves >= arvore->t_arvore){
+                //encontrar predecessor de chave
+                aux_pre = atual->filhos[indice];
+                indice_pre = encontrarPred (aux_pre);
+                atual->chaves[indice] = aux_pre->chaves[indice_pre];
+                return removerChaveArvoreBrec(arvore, aux_pre, aux_pre->chaves[indice]);
+            }
         
             else{
-
+                //TEM QUE FAZERRR*****************
             }
-        } */
-
+        }
     }
+
+    else {
+        if (atual->eh_folha)
+        return false; //Chave não encontrada
+    }
+
+    return removerChaveArvoreBrec (arvore, atual->filhos[indice], chave);
 }
 
-bool removerChaveArvoreB(struct arvoreB* arvore, int32_t chave){
-    bool aux;
+bool removerChaveArvoreB(struct arvoreB *arvore, int32_t chave){
+    
     if (!arvore)
         erro ("Arvore não existe");
 
-    return aux = removerChaveArvoreBrec (arvore->raiz, chave);
+    return removerChaveArvoreBrec (arvore, arvore->raiz, chave);
 }
