@@ -1,0 +1,1 @@
+gcc $(pkg-config --cflags allegro-5) main.c -o test $(pkg-config --libs allegro-5)
