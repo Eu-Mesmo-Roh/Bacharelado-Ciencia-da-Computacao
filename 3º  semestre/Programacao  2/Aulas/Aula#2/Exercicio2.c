@@ -16,6 +16,7 @@ struct deque
     struct nodo *fim;
 };
 
+// Insere o nodo no inicio do deque
 void insereInicio(struct deque *fipi, struct nodo *novo) 
 {
     if (fipi->inicio == NULL) 
@@ -34,6 +35,7 @@ void insereInicio(struct deque *fipi, struct nodo *novo)
     }
 }
 
+// Insere no fim do deque
 void insereFim(struct deque *fipi, struct nodo *novo)
 {
     if(fipi->inicio == NULL)
@@ -52,6 +54,7 @@ void insereFim(struct deque *fipi, struct nodo *novo)
     }
 }
 
+// Remove o nodo do inicio do deque
 struct nodo *removeInicio(struct deque *fipi)
 {
     if(fipi->inicio == NULL)
@@ -75,6 +78,7 @@ struct nodo *removeInicio(struct deque *fipi)
     return aux;
 }
 
+// Remove o nodo do final do deque
 struct nodo *removeFim(struct deque *fipi)
 {
     if(fipi->fim == NULL)
