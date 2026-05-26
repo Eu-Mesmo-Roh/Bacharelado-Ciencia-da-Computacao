@@ -23,13 +23,18 @@ int main()
     //inicializando variaveis e vetores
     char nome_arquivo[256], palavras_lidas[101];
     char palavras_frequentes[101] = "";
-    int cont_palavras, encontrou, max_frequencia;
+    int encontrou, max_frequencia;
 
     // criando o ponteiro do arquivo
     FILE* arquivo;
 
+    struct nodofrequencia *inicio_lista = NULL;
+    struct nodofrequencia *atual = NULL;
+
+    max_frequencia = 0;
+
     //solicitando o nome do arquivo e atribuindo o ponteiro
-    printf("Digite o nome do arquivo: ");
+    printf("Digite o nome do arquivo texto .txt: ");
     scanf("%255s", nome_arquivo);
 
     //abrindo o arquivo para a leitura
@@ -43,13 +48,6 @@ int main()
     }
 
     printf("Arquivo %s aberto com sucesso.\n", nome_arquivo);
-
-    //para termos o conrole de quantas palavras foram lidas
-    cont_palavras = 0;
-
-    struct nodofrequencia *inicio_lista = NULL;
-    struct nodofrequencia *atual = NULL;
-
     printf("Lendo as palavras do arquivo\n");
 
     //laço para ler as palavras

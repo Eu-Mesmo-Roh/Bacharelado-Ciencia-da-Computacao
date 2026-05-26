@@ -8,8 +8,8 @@ CC      = $(shell command -v gcc-14 2> /dev/null || echo gcc)
 CFLAGS  = -Wall -Wextra -Werror -g -std=c23
 LDLIBS  = -lm
 
-TARGET  = prova2_$(GRR)
-DIR     = prova2_$(GRR)
+TARGET  = prova1_$(GRR)
+DIR     = prova1_$(GRR)
 
 # Garante que o comando make compile tudo 
 all: $(TARGET)

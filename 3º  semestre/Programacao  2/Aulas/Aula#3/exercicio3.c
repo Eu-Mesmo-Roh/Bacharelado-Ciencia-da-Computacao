@@ -2,81 +2,83 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-//aplicando o código padrão
-int main()
+// Definindo a struct
+typedef struct 
 {
-    char str[256];
-    int numeroColuna;
+    char nome[50];
+    int idade;
+    char cidade[50];
+} Pessoa;
 
-    printf("Digite uma linha no formato CSV:\n");
+int main() 
+{
+    // Array para armazenar até 100 pessoas
+    Pessoa arrayDePessoas[100]; 
+    char linha[256];
+    int quantidade;
 
-    fgets(str, sizeof(str), stdin);
+    printf("Digite as linha no formato CSV (ex: Nome,Idade,Cidade):\n");
+    printf("Digite a palavra 'sair' para encerrar:\n");
+    
+    quantidade = 0;
 
-    str[strcspn(str, "\n")] = 0;
-
-    numeroColuna = 1;
-
-    char *token = strtok(str, ",");
-
-    while(token != NULL)
+    while (1)
     {
-        printf("coluna %d: %s\n", numeroColuna, token);
+        // Lê a linha do usuario
+        if (fgets(linha, sizeof(linha), stdin) != NULL)
+        {
+            // Removendo o caractere de nova linha que fgets adiciona no final da string
+            linha[strcspn(linha, "\n")] = '\0';
 
-        numeroColuna++;
+            // Verifica se o usuário digitou "sair"
+            if (strcmp(linha, "sair") == 0) 
+                break; // Encerra o loop
+            
+            // A primeira chamada do strtok pega a linha original e o delimitador
+            char *token = strtok(linha, ",");
 
-        token = strtok(NULL, ",");
+            // O laço continua enquanto a função encontrar dados
+            if (token != NULL)
+            {
+                strcpy(arrayDePessoas[quantidade].nome, token);
+
+                token = strtok(NULL, ",");
+                if (token != NULL)
+                {
+                    // Converte a string para inteiro usando atoi
+                    arrayDePessoas[quantidade].idade = atoi(token);
+
+                    token = strtok(NULL, ",");
+                    if (token != NULL)
+                    {
+                        strcpy(arrayDePessoas[quantidade].cidade, token);
+                        quantidade++;
+                    }
+                }
+            }
+        }
+    }
+
+    //Ordenar o array de pessoas por nome
+    for (int i = 0; i < quantidade - 1; i++) 
+    {
+        for (int j = 0; j < quantidade - i - 1; j++) 
+        {
+            if (strcmp(arrayDePessoas[j].nome, arrayDePessoas[j + 1].nome) > 0) 
+            {
+                Pessoa temp = arrayDePessoas[j];
+                arrayDePessoas[j] = arrayDePessoas[j + 1];
+                arrayDePessoas[j + 1] = temp;
+            }
+        }
+    }
+
+    // Imprime o array de pessoas ordenado
+    printf("\nPessoas ordenadas por nome:\n");
+    for (int i = 0; i < quantidade; i++)
+    {
+        printf("Nome %d: %s, Idade: %d, Cidade: %s\n", i + 1, arrayDePessoas[i].nome, arrayDePessoas[i].idade, arrayDePessoas[i].cidade);
     }
 
     return 0;
 }
-
-
-/* #include <stdio.h>
-#include <stdlib.h> // Necessário para malloc e free
-#include <string.h> // Necessário para strtok e strcspn
-
-int main() {
-    char *linha;
-    int tamanho_maximo;
-
-    // 1. Perguntamos o tamanho e alocamos dinamicamente
-    printf("Digite o tamanho maximo da linha CSV que deseja inserir: ");
-    scanf("%d", &tamanho_maximo);
-
-    // TRUQUE IMPORTANTE: Limpar o buffer do teclado!
-    // Isso consome o '\n' (Enter) que sobrou do scanf acima
-    while (getchar() != '\n'); 
-
-    // Alocamos espaço (+1 para o caractere nulo '\0' no final)
-    linha = (char *)malloc((tamanho_maximo + 1) * sizeof(char));
-
-    if (linha == NULL) {
-        printf("Erro: Nao foi possivel alocar memoria.\n");
-        return 1;
-    }
-
-    // 2. Lemos a string inteira, incluindo espaços
-    printf("Digite a linha no formato CSV (ex: Nome,Idade,Cidade):\n");
-    // Passamos o tamanho_maximo + 1 para o fgets saber o limite da memória
-    fgets(linha, tamanho_maximo + 1, stdin);
-
-    // Removemos o 'ENTER' (\n) do final da string capturado pelo fgets
-    linha[strcspn(linha, "\n")] = 0;
-
-    int numeroColuna = 1;
-
-    // 3. Cortamos a string usando strtok
-    char *token = strtok(linha, ",");
-
-    while (token != NULL) {
-        printf("Coluna %d: %s\n", numeroColuna, token);
-        numeroColuna++;
-        token = strtok(NULL, ",");
-    }
-
-    // 4. SEMPRE liberar a memória alocada no final
-    free(linha);
-
-    return 0;
-} */
