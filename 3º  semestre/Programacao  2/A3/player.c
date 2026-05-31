@@ -3,17 +3,30 @@
 #include "mundo.h"
 #include "camera.h"
 
-int iniciar_player(player *p, float x, float y, float altura, float largura, bool movendo_para_direita, bool movendo_para_esquerda)
+int iniciar_player(player *p, float x, float y, float altura, float largura)
 {
+    // Inicializando as propriedades do player
     p->x = x;
     p->y = y;
     p->altura = altura;
     p->largura = largura;
+
+    // valores padrão de movimento e fisica
     p->vel_x = 0.0f;
     p->vel_y = 0.0f;
     p->no_chao = false;
-    p->movendo_para_esquerda = movendo_para_esquerda;
-    p->movendo_para_direita = movendo_para_direita;
+    p->movendo_para_esquerda = false;
+    p->movendo_para_direita = false;
+
+    // Vida do player
+    p->max_hp = 3;
+    p->hp = p->max_hp;
+
+    // Outras interações do player
+    p->abaixado = false;
+    p->altura_original = altura;
+    p->rolamento = false;
+    p->tempo_rolamento = 0;
 
     return 1; // Sucesso
 }
@@ -44,22 +57,17 @@ int atualizar_player(player *p, fase *f)
         }
     }
 
-    // Atualizando a velocidade do player com base em qual direção ele está se movendo
-    if (p->movendo_para_direita)
+    if (!p->rolamento)
     {
-        p->vel_x += 0.5f;    
-        // Limitando a velocidade máxima para a direita
-        if (p->vel_x > 5.0f) 
-            p->vel_x = 5.0f;
-    }
+        // O player se move mais devagar quando está abaixado
+        float velocidade_movimento = p->abaixado ? 3.0f : 5.0f; 
 
-    // Se o player está se movendo para a esquerda, diminuímos a velocidade
-    if (p->movendo_para_esquerda)
-    {
-        p->vel_x -= 0.5f;
-        // Limitando a velocidade máxima para a esquerda
-        if (p->vel_x < -5.0f)
-            p->vel_x = -5.0f;
+        if (p->movendo_para_direita)
+            p->vel_x = velocidade_movimento;
+        else if (p->movendo_para_esquerda)
+            p->vel_x = -velocidade_movimento;
+        else
+            p->vel_x = 0.0f;
     }
 
     // Presumimos que o player não está no chão até verificarmos as colisões
@@ -152,7 +160,7 @@ int atualizar_player(player *p, fase *f)
 int pular_player(player *p)
 {
     // O player só pode pular se estiver no chão
-    if (p->no_chao)
+    if (p->no_chao && !p->rolamento && !p->abaixado)
     {
         // Aplicando um impulso para cima
         p->vel_y = -12.0f;
@@ -163,7 +171,9 @@ int pular_player(player *p)
 
 int desenhar_player(player *p, camera *c)
 {
-    // Desenhando o player como um retangulo usando o Allegro
-    al_draw_filled_rectangle(p->x - c->x, p->y - c->y, (p->x + p->largura) - c->x, (p->y + p->altura) - c->y, al_map_rgb(255, 0, 0));
+    ALLEGRO_COLOR cor_player = p->rolamento ? al_map_rgb(0, 100, 255) : al_map_rgb(255, 0, 0);
+
+    al_draw_filled_rectangle(p->x - c->x, p->y - c->y, (p->x + p->largura) - c->x, (p->y + p->altura) - c->y, cor_player);
+
     return 1; // Sucesso
 }

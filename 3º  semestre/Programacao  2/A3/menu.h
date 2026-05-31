@@ -9,7 +9,8 @@ typedef enum
     ESTADO_JOGANDO,
     ESTADO_OPCOES,
     ESTADO_GAME_OVER,
-    ESTADO_VITORIA
+    ESTADO_VITORIA,
+    ESTADO_SAIR
 } estado_jogo;
 
 typedef struct menu
@@ -22,8 +23,8 @@ typedef struct menu
 
 int iniciar_menu(menu *m);
 
-int lidar_imput_menu(menu *m, int tecla, estado_jogo *estado_atual);
+int tratar_imput_menu(menu *m, int tecla, estado_jogo *estado_atual);
 
-int desenhar_menu(menu *m);
+int desenhar_menu(menu *m, ALLEGRO_FONT *fonte);
 
 #endif // MENU_H

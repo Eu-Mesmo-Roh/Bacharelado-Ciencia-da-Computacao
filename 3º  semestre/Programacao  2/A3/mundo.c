@@ -14,12 +14,9 @@ int carregar_mapa(fase *f, const char *nome_arquivo)
     if (!mapa)
         return 0; // Falha ao abrir o arquivo
     
-    printf("lendo o arquivo '%s'\n", nome_arquivo);
-
     while (fgets(linha, sizeof(linha), mapa))
     {
         contador_linhas++;
-        printf("lendo a linha %d: %s", contador_linhas, linha);
 
         token = strtok(linha, ", \n\r");
 
@@ -51,7 +48,6 @@ int carregar_mapa(fase *f, const char *nome_arquivo)
                 altura = atof(token);
 
                 adicionar_plataforma(f, x, y, largura, altura);
-                printf("adicionada plataforma: x=%.2f, y=%.2f, largura=%.2f, altura=%.2f\n", x, y, largura, altura);
             }
             else
             {
@@ -61,7 +57,6 @@ int carregar_mapa(fase *f, const char *nome_arquivo)
         }
     }
 
-    printf("fim da leitura. Total de plataformas carregadas: %d\n", f->num_plataformas);
     fclose(mapa);
 
     return 1; // Sucesso
