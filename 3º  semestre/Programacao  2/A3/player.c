@@ -1,9 +1,8 @@
 #include "player.h"
-#include "motor_grafico.h"
 #include "mundo.h"
 #include "camera.h"
 
-int iniciar_player(player *p, float x, float y, float altura, float largura)
+int iniciar_player(player *p, float x, float y, float altura, float largura, ALLEGRO_BITMAP *sprite)
 {
     // Inicializando as propriedades do player
     p->x = x;
@@ -27,6 +26,11 @@ int iniciar_player(player *p, float x, float y, float altura, float largura)
     p->altura_original = altura;
     p->rolamento = false;
     p->tempo_rolamento = 0;
+
+    // Atribui o sprite do player
+    p->sprite = sprite; 
+    p->frame_atual = 0;
+    p->timer_animação = 0;
 
     return 1; // Sucesso
 }
@@ -153,6 +157,16 @@ int atualizar_player(player *p, fase *f)
         }
     }
 
+    p->timer_animação++;
+    if (p->timer_animação >= 10) // Ajuste o valor para controlar a velocidade da animação
+    {
+        p->timer_animação = 0;
+        p->frame_atual++;
+
+        if(p->frame_atual >= 10) // Supondo que o sprite tenha 4 frames de animação
+            p->frame_atual = 0;
+    }
+
 
     return 1; // Sucesso
 }
@@ -171,9 +185,23 @@ int pular_player(player *p)
 
 int desenhar_player(player *p, camera *c)
 {
-    ALLEGRO_COLOR cor_player = p->rolamento ? al_map_rgb(0, 100, 255) : al_map_rgb(255, 0, 0);
+    if(p->sprite)
+    {
+        int flags = 0;
+        
+        if (p->movendo_para_esquerda)
+        // Sprite invertido para a esquerda
+        flags = ALLEGRO_FLIP_HORIZONTAL;
 
-    al_draw_filled_rectangle(p->x - c->x, p->y - c->y, (p->x + p->largura) - c->x, (p->y + p->altura) - c->y, cor_player);
+
+        // Supondo que cada frame tenha 80 pixels de largura
+        int pos_x_recorte = p->frame_atual * 120; 
+
+        // Fator de escala para aumentar o tamanho do sprite
+        float escala = 2.0f; 
+
+        al_draw_scaled_bitmap(p->sprite, pos_x_recorte, 0, 120, 80, p->x - c->x, p->y - c->y, 120 * escala, 80 * escala, flags);
+    }
 
     return 1; // Sucesso
 }

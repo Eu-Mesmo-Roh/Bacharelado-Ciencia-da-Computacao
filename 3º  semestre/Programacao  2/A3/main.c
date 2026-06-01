@@ -51,10 +51,18 @@ int main()
     //criando o menu
     menu menu_principal;
     iniciar_menu(&menu_principal);
+
+    // Carregando o sprite do player usando o motor gráfico
+    ALLEGRO_BITMAP *sprite_player = al_load_bitmap("assets/_Idle.png");
+    if(!sprite_player)
+    {
+        fprintf(stderr, "Erro ao carregar o sprite do player!\n");
+        return -1;
+    }
     
     // Criando o player
     player jogador;
-    iniciar_player(&jogador, 100, 100, 50, 30);
+    iniciar_player(&jogador, 100, 100, 80, 120, sprite_player);
     
     // Criando o nível
     fase nivel_1;
@@ -244,7 +252,7 @@ int main()
                 if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER)
                 {
                     // Reiniciando o jogo
-                    iniciar_player(&jogador, 100, 100, 50, 30);
+                    iniciar_player(&jogador, 100, 100, 80, 120, sprite_player);
 
                     estado_atual = ESTADO_JOGANDO;
                 }
@@ -255,7 +263,7 @@ int main()
                 if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER)
                 {
                     // Reinicia a posição e velocidade para a proxima vez que for jogar
-                    iniciar_player(&jogador, 100, 100, 50, 30);
+                    iniciar_player(&jogador, 100, 100, 80, 120, sprite_player);
 
                     // Voltando para o menu
                     estado_atual = ESTADO_MENU_PRINCIPAL;
@@ -338,6 +346,7 @@ int main()
     destruir_fase(&nivel_1);
     al_destroy_display(display);
     al_destroy_timer(tempo);
+    al_destroy_bitmap(sprite_player);
     al_destroy_event_queue(fila_eventos);
 
     return 0;

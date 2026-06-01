@@ -2,6 +2,8 @@
 #define PLAYER_H
 
 #include <stdbool.h>
+#include "motor_grafico.h"
+
 
 
 // Estrutura para representar o player no jogo
@@ -27,6 +29,12 @@ typedef struct player
     bool rolamento;
     int tempo_rolamento;
 
+    // Sprite do player
+    ALLEGRO_BITMAP *sprite; 
+
+    int frame_atual;
+    int timer_animação;
+
 }player;
 
 // Estrutura para representar a câmera no jogo
@@ -36,7 +44,7 @@ typedef struct camera camera;
 typedef struct fase fase;
 
 // Função para iniciar o player, definindo suas propriedades iniciais
-int iniciar_player(player *p, float x, float y, float altura, float largura);
+int iniciar_player(player *p, float x, float y, float altura, float largura, ALLEGRO_BITMAP *sprite);
 
 // Função para atualizar a posição do player, aplicando a gravidade e verificando colisões
 int atualizar_player(player *p, fase *f);
