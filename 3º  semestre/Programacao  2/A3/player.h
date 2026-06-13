@@ -15,10 +15,14 @@ typedef struct player
     float vel_x, vel_y;
     bool no_chao;
     bool movendo_para_direita, movendo_para_esquerda;
+    bool virado_para_esquerda;
 
     // Vida do player
     int hp;
     int max_hp;
+    int timer_invuleravel;
+    int timer_knockback;
+    bool tomando_dano;
 
     /* Outras interações do player */
     // Variável para indicar se o player está abaixado
@@ -30,10 +34,20 @@ typedef struct player
     int tempo_rolamento;
 
     // Sprite do player
-    ALLEGRO_BITMAP *sprite; 
+    ALLEGRO_BITMAP *sprite_parado;
+    ALLEGRO_BITMAP *sprite_correndo;
+    ALLEGRO_BITMAP *sprite_parado_abaixado;
+    ALLEGRO_BITMAP *sprite_andando_abaixado;
+    ALLEGRO_BITMAP *sprite_rolando;
+    ALLEGRO_BITMAP *sprite_inverter;
+    ALLEGRO_BITMAP *sprite_pular;
+    ALLEGRO_BITMAP *sprite_cair;
+    ALLEGRO_BITMAP *sprite_atual;
 
     int frame_atual;
-    int timer_animação;
+    int timer_animacao;
+    int jump_buffer;
+    int coyote_time;
 
 }player;
 
@@ -44,7 +58,7 @@ typedef struct camera camera;
 typedef struct fase fase;
 
 // Função para iniciar o player, definindo suas propriedades iniciais
-int iniciar_player(player *p, float x, float y, float altura, float largura, ALLEGRO_BITMAP *sprite);
+int iniciar_player(player *p, float x, float y, float altura, float largura, ALLEGRO_BITMAP *img_parado, ALLEGRO_BITMAP *img_correndo, ALLEGRO_BITMAP *img_parado_abaixado, ALLEGRO_BITMAP *img_andando_abaixado, ALLEGRO_BITMAP *img_rolando, ALLEGRO_BITMAP *img_inverter, ALLEGRO_BITMAP *img_pular, ALLEGRO_BITMAP *img_cair);
 
 // Função para atualizar a posição do player, aplicando a gravidade e verificando colisões
 int atualizar_player(player *p, fase *f);

@@ -41,6 +41,7 @@ int main()
     // Variaveis para o controle do jogo
     bool rodando = true;
     bool desenhar = true;
+    bool pulo_segurado = false;
 
     // Iniciando o timer
     al_start_timer (tempo);
@@ -53,16 +54,25 @@ int main()
     iniciar_menu(&menu_principal);
 
     // Carregando o sprite do player usando o motor gráfico
-    ALLEGRO_BITMAP *sprite_player = al_load_bitmap("assets/_Idle.png");
-    if(!sprite_player)
+    float compensacao_y;
+    ALLEGRO_BITMAP *sprite_player_parado = al_load_bitmap("assets/_Idle.png");
+    ALLEGRO_BITMAP *sprite_player_correndo = al_load_bitmap("assets/_Run.png");
+    ALLEGRO_BITMAP *sprite_player_parado_abaixado = al_load_bitmap("assets/_Crouch.png");
+    ALLEGRO_BITMAP *sprite_player_andando_abaixado = al_load_bitmap("assets/_CrouchWalk.png");
+    ALLEGRO_BITMAP *sprite_player_rolando = al_load_bitmap("assets/_Roll.png");
+    ALLEGRO_BITMAP *sprite_player_inverter = al_load_bitmap("assets/_TurnAround.png");
+    ALLEGRO_BITMAP *sprite_player_pular = al_load_bitmap("assets/_Jump.png");
+    ALLEGRO_BITMAP *sprite_player_cair = al_load_bitmap("assets/_Fall.png");
+
+    if(!sprite_player_parado || !sprite_player_correndo || !sprite_player_rolando || !sprite_player_parado_abaixado || !sprite_player_andando_abaixado || !sprite_player_pular || !sprite_player_cair)
     {
-        fprintf(stderr, "Erro ao carregar o sprite do player!\n");
+        fprintf(stderr, "Erro ao carregar os sprites do player!\n");
         return -1;
     }
     
     // Criando o player
     player jogador;
-    iniciar_player(&jogador, 100, 100, 80, 120, sprite_player);
+    iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair);
     
     // Criando o nível
     fase nivel_1;
@@ -108,40 +118,6 @@ int main()
         {
             if (estado_atual == ESTADO_JOGANDO)
             {
-                if (jogador.rolamento)
-                {
-                    jogador.tempo_rolamento--;
-
-                    if (jogador.tempo_rolamento <= 0)
-                    {
-                        jogador.rolamento = false;
-
-                        // Atualizando o estado do teclado para garantir que o jogador não fique preso em um estado de movimento após o rolamento
-                        ALLEGRO_KEYBOARD_STATE estado_teclado;
-                        al_get_keyboard_state(&estado_teclado);
-
-                        // Verificando se o jogador ainda está segurando a tecla de agachar para decidir se ele deve permanecer abaixado ou voltar à posição normal
-                        bool segurando_agachar = al_key_down(&estado_teclado, ALLEGRO_KEY_S);
-
-                        // Se o jogador não está segurando a tecla de agachar, ele volta à posição normal
-                        if (!segurando_agachar)
-                        {
-                            if (jogador.abaixado)
-                            {
-                                jogador.abaixado = false;
-                                jogador.y -= jogador.altura_original / 2.0f; 
-                                jogador.altura = jogador.altura_original;
-                            }
-                        }
-
-                        bool segurando_pulo = al_key_down(&estado_teclado, ALLEGRO_KEY_W) || al_key_down(&estado_teclado, ALLEGRO_KEY_SPACE);
-
-                        if (segurando_pulo && jogador.no_chao)
-                        {
-                            pular_player(&jogador);
-                        }
-                    }
-                }
 
                 // Aqui é onde a lógica do jogo será atualizada
                 atualizar_player(&jogador, &nivel_1);
@@ -154,12 +130,13 @@ int main()
 
                     if (al_key_down(&estado_teclado, ALLEGRO_KEY_S) && !jogador.abaixado)
                     {
-                        jogador.abaixado = true;
+                        compensacao_y = 20.0f;
 
+                        jogador.abaixado = true;
                         // Reduz a altura do player pela metade
-                        jogador.altura = jogador.altura_original / 2.0f;
+                        jogador.altura = jogador.altura_original - compensacao_y;
                         // Ajusta a posição y para que o player pareça estar se abaixando
-                        jogador.y += jogador.altura_original / 2.0f;
+                        jogador.y += compensacao_y;
                     }
                 }
 
@@ -197,7 +174,13 @@ int main()
                 
                 // Jogador pula se a barra de espaço for precionada
                 if (evento.keyboard.keycode == ALLEGRO_KEY_W || evento.keyboard.keycode == ALLEGRO_KEY_SPACE)
-                    pular_player(&jogador);
+                {
+                    if (!pulo_segurado)
+                    {
+                        pular_player(&jogador);
+                        pulo_segurado = true;
+                    }
+                }
 
                 // Para fim de teste o jogador leva dano
                 if (evento.keyboard.keycode == ALLEGRO_KEY_K)
@@ -211,37 +194,50 @@ int main()
                 {
                     if (!jogador.abaixado && !jogador.rolamento && jogador.no_chao)
                     {
-                        jogador.abaixado = true;
-
-                        // Reduz a altura do player pela metade
-                        jogador.altura = jogador.altura_original / 2.0f;
-
-                        // Ajusta a posição y para que o player pareça estar se abaixando
-                        jogador.y += jogador.altura_original / 2.0f; 
+                        if(!jogador.abaixado)
+                        {
+                            compensacao_y = 20.0f;
+    
+                            jogador.abaixado = true;
+    
+                            // Reduz a altura do player pela metade
+                            jogador.altura = jogador.altura_original - compensacao_y;
+    
+                            // Ajusta a posição y para que o player pareça estar se abaixando
+                            jogador.y += compensacao_y; 
+                        }
                     }
                 }
 
                 if (evento.keyboard.keycode == ALLEGRO_KEY_LSHIFT)
                 {
+                    // Só rola se não estiver a rolar, estiver no chão e a mover-se
                     if (!jogador.rolamento && jogador.no_chao && (jogador.movendo_para_direita || jogador.movendo_para_esquerda))
                     {
+                        // 1. Ativa o estado (sem ativar o 'abaixado'!)
                         jogador.rolamento = true;
-                        jogador.tempo_rolamento = 20; // O rolamento dura 30 frames (meio segundo a 60 FPS)
 
+                        // 2. FORÇA a animação a começar do zero
+                        jogador.frame_atual = 0;
+                        jogador.timer_animacao = 0;
+
+                        // 3. Aplica o impulso de velocidade
                         if (jogador.movendo_para_esquerda)
-                            jogador.vel_x = -15.0f;
+                            jogador.vel_x = -9.0f;
                         else if (jogador.movendo_para_direita)
-                            jogador.vel_x = 15.0f;
+                            jogador.vel_x = 9.0f;
 
-                        if (!jogador.abaixado)
-                        {
-                            jogador.abaixado = true;
+                        // 4. Encolhe a hitbox de forma segura
+                        // Verificamos se ele já está com o tamanho normal para não encolher duas vezes
+                        if (jogador.altura == jogador.altura_original)
+                        {   
+                            float compensacao_y = 20.0f; // Ajuste para o tamanho da sua sprite de rolamento
 
-                            // Reduz a altura do player para simular o rolamento
-                            jogador.altura = jogador.altura_original / 2.0f;
+                            // Reduz a altura para o herói passar por debaixo de obstáculos
+                            jogador.altura = jogador.altura_original - compensacao_y;
 
-                            // Ajusta a posição y para que o player pareça estar rolando
-                            jogador.y += jogador.altura_original / 2.0f; 
+                            // Empurra para baixo para os pés não saírem do chão
+                            jogador.y += compensacao_y; 
                         }
                     }
                 }
@@ -252,7 +248,7 @@ int main()
                 if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER)
                 {
                     // Reiniciando o jogo
-                    iniciar_player(&jogador, 100, 100, 80, 120, sprite_player);
+                    iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair);
 
                     estado_atual = ESTADO_JOGANDO;
                 }
@@ -263,7 +259,7 @@ int main()
                 if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER)
                 {
                     // Reinicia a posição e velocidade para a proxima vez que for jogar
-                    iniciar_player(&jogador, 100, 100, 80, 120, sprite_player);
+                    iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair);
 
                     // Voltando para o menu
                     estado_atual = ESTADO_MENU_PRINCIPAL;
@@ -274,19 +270,27 @@ int main()
         /* ----- Se uma tecla foi solta ----- */
         else if (evento.type == ALLEGRO_EVENT_KEY_UP)
         {
+            if (evento.keyboard.keycode == ALLEGRO_KEY_W || evento.keyboard.keycode == ALLEGRO_KEY_SPACE)
+                pulo_segurado = false;
+
             if (estado_atual == ESTADO_JOGANDO)
             {
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S)
                 {
                     if (jogador.abaixado)
-                    {
+                    {               
+                        // O jogador para de estar abaixado
                         jogador.abaixado = false;
 
-                        // Ajusta a posição y para que o player pareça estar se levantando
-                        jogador.y -= jogador.altura_original / 2.0f; 
+                        // Se o jogador não estiver rolando, ele volta à altura normal
+                        if (!jogador.rolamento)
+                        {
+                            compensacao_y = 20.0f;
+                            // Restaura a altura original do player
+                            jogador.altura = jogador.altura_original;
 
-                        // Restaura a altura original do player
-                        jogador.altura = jogador.altura_original;
+                            jogador.y -= compensacao_y; // Ajusta a posição y para que o player pareça estar se levantando
+                        }
                     }
                 }
                 // Jogador para de se mover para a direita ou esquerda dependendo da tecla solta
@@ -294,6 +298,11 @@ int main()
                     jogador.movendo_para_direita = false;
                 else if (evento.keyboard.keycode == ALLEGRO_KEY_A)
                     jogador.movendo_para_esquerda = false;
+
+                if (evento.keyboard.keycode == ALLEGRO_KEY_LSHIFT)
+                {
+                    
+                }
             }
         }
 
@@ -344,9 +353,14 @@ int main()
 
     // Limpando os recursos alocados
     destruir_fase(&nivel_1);
+    al_destroy_font(fonte);
     al_destroy_display(display);
     al_destroy_timer(tempo);
-    al_destroy_bitmap(sprite_player);
+    al_destroy_bitmap(sprite_player_parado);
+    al_destroy_bitmap(sprite_player_correndo);
+    al_destroy_bitmap(sprite_player_parado_abaixado);
+    al_destroy_bitmap(sprite_player_andando_abaixado);
+    al_destroy_bitmap(sprite_player_rolando);
     al_destroy_event_queue(fila_eventos);
 
     return 0;
