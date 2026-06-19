@@ -1,6 +1,8 @@
 #ifndef MUNDO_H
 #define MUNDO_H
 
+#include "armadilhas.h"
+
 // Estrutura para representar uma plataforma no jogo
 typedef struct
 {
@@ -14,6 +16,10 @@ typedef struct fase
     plataforma *plataformas;
     int num_plataformas;
     int capacidade_plataformas;
+
+    armadilha *armadilhas;
+    int num_armadilhas;
+    int capacidade_armadilhas;
 }fase;
 
 // Estrutura para representar a câmera no jogo
