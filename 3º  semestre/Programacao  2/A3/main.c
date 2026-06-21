@@ -3,6 +3,7 @@
 #include "mundo.h"
 #include "camera.h"
 #include "menu.h"
+#include "background.h"
 
 const float FPS = 60.0;
 
@@ -48,10 +49,25 @@ int main()
 
     // Estado do jogo
     estado_jogo estado_atual = ESTADO_MENU_PRINCIPAL;
+    int opcoes_pausa = 0; // 0 = continuar, 1 = opções, 2 = Sair
 
     //criando o menu
     menu menu_principal;
     iniciar_menu(&menu_principal);
+
+    // Carregando as sprites do cenario
+    ALLEGRO_BITMAP *img_bg1 = al_load_bitmap("background/BG1.png");
+    ALLEGRO_BITMAP *img_bg2 = al_load_bitmap("background/BG2.png");
+    ALLEGRO_BITMAP *img_bg3 = al_load_bitmap("background/BG3.png");
+
+    if (!img_bg1 || !img_bg2 || !img_bg3)
+    {
+        fprintf(stderr, "Erro ao carregar os sprites do background!\n");
+        return -1;
+    }
+
+    background bg_parallax;
+    iniciar_background(&bg_parallax, img_bg1, img_bg2, img_bg3, 800.0f, 600.0f);
 
     // Carregando o sprite do player usando o motor gráfico
     float compensacao_y;
@@ -63,21 +79,38 @@ int main()
     ALLEGRO_BITMAP *sprite_player_inverter = al_load_bitmap("assets/_TurnAround.png");
     ALLEGRO_BITMAP *sprite_player_pular = al_load_bitmap("assets/_Jump.png");
     ALLEGRO_BITMAP *sprite_player_cair = al_load_bitmap("assets/_Fall.png");
-
-    if(!sprite_player_parado || !sprite_player_correndo || !sprite_player_rolando || !sprite_player_parado_abaixado || !sprite_player_andando_abaixado || !sprite_player_pular || !sprite_player_cair)
+    ALLEGRO_BITMAP *sprite_player_dano = al_load_bitmap("assets/_Hit.png");
+    ALLEGRO_BITMAP *sprite_player_morte = al_load_bitmap("assets/_DeathNoMovement.png");
+    
+    if (!sprite_player_parado || !sprite_player_correndo || !sprite_player_rolando || !sprite_player_parado_abaixado || !sprite_player_andando_abaixado || !sprite_player_pular || !sprite_player_cair)
     {
         fprintf(stderr, "Erro ao carregar os sprites do player!\n");
+        return -1;
+    }
+
+    // Carregando os sprites das armadilhas
+    ALLEGRO_BITMAP *sprite_suriken = al_load_bitmap("assets_traps/Suriken.png");
+    ALLEGRO_BITMAP *sprite_espinho = al_load_bitmap("assets_traps/Spike_B.png");
+    ALLEGRO_BITMAP *sprite_lanca = al_load_bitmap("assets_traps/Spear.png");
+    ALLEGRO_BITMAP *sprite_fogo_caixa = al_load_bitmap("assets_traps/FireBox.png");
+    ALLEGRO_BITMAP *sprite_fogo_chama = al_load_bitmap("assets_traps/Fire.png");
+    ALLEGRO_BITMAP *sprite_espinho_movel = al_load_bitmap("assets_traps/Trap_Spike_Run.png");
+
+
+    if (!sprite_suriken || !sprite_espinho || !sprite_lanca || !sprite_fogo_caixa || !sprite_fogo_chama || !sprite_espinho_movel)
+    {
+        fprintf(stderr, "Erro ao carregar os sprites das Traps!\n");
         return -1;
     }
     
     // Criando o player
     player jogador;
-    iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair);
+    iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair, sprite_player_dano, sprite_player_morte);
     
     // Criando o nível
     fase nivel_1;
     iniciar_fase(&nivel_1);
-    if (!carregar_mapa(&nivel_1, "fase1.csv"))
+    if (!carregar_mapa(&nivel_1, "fase1.csv", sprite_suriken, sprite_espinho, sprite_lanca, sprite_fogo_caixa, sprite_fogo_chama, sprite_espinho_movel))
     {
         fprintf(stderr, "Erro ao carregar o mapa!\n");
         destruir_fase(&nivel_1);
@@ -121,9 +154,10 @@ int main()
 
                 // Aqui é onde a lógica do jogo será atualizada
                 atualizar_player(&jogador, &nivel_1);
+                atualizar_fase(&nivel_1);
                 atualizar_camera(&cam, &jogador);
 
-                if (jogador.no_chao && !jogador.rolamento)
+                if (jogador.no_chao && !jogador.rolamento && jogador.hp > 0)
                 {
                     ALLEGRO_KEYBOARD_STATE estado_teclado;
                     al_get_keyboard_state(&estado_teclado);
@@ -144,7 +178,7 @@ int main()
                 if (jogador.y > 1000.0f) 
                     jogador.hp = 0;
                 
-                if (jogador.hp <= 0)
+                if (jogador.morto)
                     estado_atual = ESTADO_GAME_OVER;
                 
                 if (jogador.x > 2500.0f) 
@@ -163,8 +197,26 @@ int main()
             
             else if (estado_atual == ESTADO_JOGANDO)
             {
-                if(evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+                if (evento.keyboard.keycode == ALLEGRO_KEY_DELETE)
                     rodando = false;
+
+                if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+                {
+                    estado_atual = ESTADO_PAUSADO;
+                    opcoes_pausa = 0;
+
+                    // Corrigindo o bug correndo infinito apos o pause
+                    jogador.movendo_para_direita = false;
+                    jogador.movendo_para_esquerda = false;
+                    pulo_segurado = false;
+
+                    if (jogador.abaixado && !jogador.rolamento)
+                    {
+                        jogador.abaixado = false;
+                        jogador.altura = jogador.altura_original;
+                        jogador.y -= 20.0f;
+                    }
+                }
             
                 // Jogador começa a se mover para a direita ou esquerda dependendo da tecla precionada
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D)
@@ -192,7 +244,7 @@ int main()
                 // O jogador se abaixa se a tecla S for precionada, e volta à posição normal quando a tecla for solta
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S)
                 {
-                    if (!jogador.abaixado && !jogador.rolamento && jogador.no_chao)
+                    if (!jogador.abaixado && !jogador.rolamento && jogador.no_chao && jogador.hp > 0)
                     {
                         if(!jogador.abaixado)
                         {
@@ -212,7 +264,7 @@ int main()
                 if (evento.keyboard.keycode == ALLEGRO_KEY_LSHIFT)
                 {
                     // Só rola se não estiver a rolar, estiver no chão e a mover-se
-                    if (!jogador.rolamento && jogador.no_chao && (jogador.movendo_para_direita || jogador.movendo_para_esquerda))
+                    if (!jogador.rolamento && jogador.no_chao && (jogador.movendo_para_direita || jogador.movendo_para_esquerda) && jogador.hp > 0)
                     {
                         // 1. Ativa o estado (sem ativar o 'abaixado'!)
                         jogador.rolamento = true;
@@ -243,12 +295,58 @@ int main()
                 }
             }
 
+            else if (estado_atual == ESTADO_PAUSADO)
+            {
+                // Navega para cima
+                if (evento.keyboard.keycode == ALLEGRO_KEY_W || evento.keyboard.keycode == ALLEGRO_KEY_UP)
+                {
+                    opcoes_pausa--;
+                    if (opcoes_pausa < 0) opcoes_pausa = 2; // Loop para o final
+                }
+                // Navega para baixo
+                else if (evento.keyboard.keycode == ALLEGRO_KEY_S || evento.keyboard.keycode == ALLEGRO_KEY_DOWN)
+                {
+                    opcoes_pausa++;
+                    if (opcoes_pausa > 2) opcoes_pausa = 0; // Loop para o topo
+                }
+                // Confirma a opção
+                else if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER)
+                {
+                    if (opcoes_pausa == 0) {
+                        // 1. Continuar
+                        estado_atual = ESTADO_JOGANDO;
+                    }
+                    else if (opcoes_pausa == 1) {
+                        // 2. Configurações
+                        estado_atual = ESTADO_OPCOES; 
+                    }
+                    else if (opcoes_pausa == 2) {
+                        // 3. Voltar ao Menu Principal
+                        
+                        // Reseta a vida e as posições do player
+                        iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair, sprite_player_dano, sprite_player_morte);
+                        
+                        // Reseta a câmera para o começo da fase
+                        cam.x = 0;
+                        cam.y = 0;
+                        
+                        estado_atual = ESTADO_MENU_PRINCIPAL;
+                    }
+                }
+                // Despausa apertando ESC novamente
+                else if (evento.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+                {
+                    estado_atual = ESTADO_JOGANDO;
+                }
+            }
+
             else if (estado_atual == ESTADO_GAME_OVER)
             {
                 if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER)
                 {
                     // Reiniciando o jogo
-                    iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair);
+                    iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair, sprite_player_dano, sprite_player_morte);
+                    
 
                     estado_atual = ESTADO_JOGANDO;
                 }
@@ -259,7 +357,7 @@ int main()
                 if (evento.keyboard.keycode == ALLEGRO_KEY_ENTER)
                 {
                     // Reinicia a posição e velocidade para a proxima vez que for jogar
-                    iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair);
+                    iniciar_player(&jogador, 100, 100, 75, 40, sprite_player_parado, sprite_player_correndo, sprite_player_parado_abaixado, sprite_player_andando_abaixado, sprite_player_rolando, sprite_player_inverter, sprite_player_pular, sprite_player_cair, sprite_player_dano, sprite_player_morte);
 
                     // Voltando para o menu
                     estado_atual = ESTADO_MENU_PRINCIPAL;
@@ -316,12 +414,42 @@ int main()
             if (estado_atual == ESTADO_MENU_PRINCIPAL)
                 desenhar_menu(&menu_principal, fonte);
 
-            else if (estado_atual == ESTADO_JOGANDO)
+            else if (estado_atual == ESTADO_JOGANDO || estado_atual == ESTADO_PAUSADO)
             {
+                // Desenha o jogo normal por baixo
+                desenhar_background(&bg_parallax, &cam);
                 desenhar_fase(&nivel_1, &cam);
                 desenhar_player(&jogador, &cam);
 
-                al_draw_textf(fonte, al_map_rgb(255, 50, 50), 20, 20, ALLEGRO_ALIGN_LEFT, "HP: %d / %d", jogador.hp, jogador.max_hp);
+                // Janela de Pausa
+                if (estado_atual == ESTADO_PAUSADO)
+                {
+                    // Fundo preto
+                    al_draw_filled_rectangle(0, 0, 800, 600, al_map_rgba(0, 0, 0, 180));
+                    
+                    // Caixa do menu central
+                    float caixa_x1 = 200, caixa_y1 = 150, caixa_x2 = 600, caixa_y2 = 450;
+                    al_draw_filled_rectangle(caixa_x1, caixa_y1, caixa_x2, caixa_y2, al_map_rgb(30, 30, 40)); // Fundo
+                    al_draw_rectangle(caixa_x1, caixa_y1, caixa_x2, caixa_y2, al_map_rgb(200, 200, 200), 3.0f); // Borda
+                    
+                    // Título
+                    al_draw_text(fonte, al_map_rgb(255, 200, 0), 400, 180, ALLEGRO_ALIGN_CENTER, "JOGO PAUSADO");
+                    al_draw_line(250, 210, 550, 210, al_map_rgb(100, 100, 100), 1.0f); // Linha divisória
+                    
+                    // Cores para dar feedback visual
+                    ALLEGRO_COLOR cor_selecionada = al_map_rgb(0, 255, 255); // Ciano brilhante
+                    ALLEGRO_COLOR cor_normal = al_map_rgb(150, 150, 150);    // Cinza fosco
+                    
+                    // Opções de texto
+                    al_draw_text(fonte, opcoes_pausa == 0 ? cor_selecionada : cor_normal, 400, 260, ALLEGRO_ALIGN_CENTER, "Continuar");
+                    al_draw_text(fonte, opcoes_pausa == 1 ? cor_selecionada : cor_normal, 400, 320, ALLEGRO_ALIGN_CENTER, "Configuracoes");
+                    al_draw_text(fonte, opcoes_pausa == 2 ? cor_selecionada : cor_normal, 400, 380, ALLEGRO_ALIGN_CENTER, "Voltar ao Menu Principal");
+                    
+                    // Desenha o cursor 
+                    if (opcoes_pausa == 0) al_draw_text(fonte, cor_selecionada, 250, 260, ALLEGRO_ALIGN_LEFT, ">");
+                    if (opcoes_pausa == 1) al_draw_text(fonte, cor_selecionada, 250, 320, ALLEGRO_ALIGN_LEFT, ">");
+                    if (opcoes_pausa == 2) al_draw_text(fonte, cor_selecionada, 250, 380, ALLEGRO_ALIGN_LEFT, ">");
+                }
             }
             else if (estado_atual == ESTADO_OPCOES)
             {
@@ -351,17 +479,38 @@ int main()
         }
     }
 
-    // Limpando os recursos alocados
+    // Limpando os recursos alocados do mundo e do programa
     destruir_fase(&nivel_1);
     al_destroy_font(fonte);
     al_destroy_display(display);
     al_destroy_timer(tempo);
+    al_destroy_event_queue(fila_eventos);
+
+    // limpando os recursos alocados do player
     al_destroy_bitmap(sprite_player_parado);
     al_destroy_bitmap(sprite_player_correndo);
     al_destroy_bitmap(sprite_player_parado_abaixado);
     al_destroy_bitmap(sprite_player_andando_abaixado);
     al_destroy_bitmap(sprite_player_rolando);
-    al_destroy_event_queue(fila_eventos);
+    al_destroy_bitmap(sprite_player_inverter);
+    al_destroy_bitmap(sprite_player_pular);
+    al_destroy_bitmap(sprite_player_cair);
+    al_destroy_bitmap(sprite_player_dano);
+    al_destroy_bitmap(sprite_player_morte);
+
+    // Limpando os recursos alocados para as armadilhas
+    al_destroy_bitmap(sprite_suriken);
+    al_destroy_bitmap(sprite_espinho);
+    al_destroy_bitmap(sprite_lanca);
+    al_destroy_bitmap(sprite_fogo_caixa);
+    al_destroy_bitmap(sprite_fogo_chama);
+    al_destroy_bitmap(sprite_espinho_movel);
+
+    // Limpando a memoria das imagens do background
+    al_destroy_bitmap(img_bg1);
+    al_destroy_bitmap(img_bg2);
+    al_destroy_bitmap(img_bg3);
+
 
     return 0;
 }

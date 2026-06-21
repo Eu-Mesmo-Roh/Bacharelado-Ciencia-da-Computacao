@@ -1,7 +1,7 @@
 # Configurações do compilador e bibliotecas
 CC = gcc
 CFLAGS = -Wall -Wextra -g
-LIBS = -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lallegro_primitives
+LIBS = -lallegro -lallegro_image -lallegro_font -lallegro_ttf -lallegro_primitives -lm
 TARGET = Game
 
 # Listagem dos arquivos fonte e objetos

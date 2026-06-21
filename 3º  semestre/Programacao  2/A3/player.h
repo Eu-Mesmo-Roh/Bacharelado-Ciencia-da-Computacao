@@ -25,6 +25,7 @@ typedef struct player
     bool tomando_dano;
 
     /* Outras interações do player */
+
     // Variável para indicar se o player está abaixado
     bool abaixado;
     float altura_original;
@@ -43,11 +44,15 @@ typedef struct player
     ALLEGRO_BITMAP *sprite_pular;
     ALLEGRO_BITMAP *sprite_cair;
     ALLEGRO_BITMAP *sprite_atual;
+    ALLEGRO_BITMAP *sprite_dano;
+    ALLEGRO_BITMAP *sprite_morte;
+
 
     int frame_atual;
     int timer_animacao;
     int jump_buffer;
     int coyote_time;
+    bool morto;
 
 }player;
 
@@ -58,7 +63,7 @@ typedef struct camera camera;
 typedef struct fase fase;
 
 // Função para iniciar o player, definindo suas propriedades iniciais
-int iniciar_player(player *p, float x, float y, float altura, float largura, ALLEGRO_BITMAP *img_parado, ALLEGRO_BITMAP *img_correndo, ALLEGRO_BITMAP *img_parado_abaixado, ALLEGRO_BITMAP *img_andando_abaixado, ALLEGRO_BITMAP *img_rolando, ALLEGRO_BITMAP *img_inverter, ALLEGRO_BITMAP *img_pular, ALLEGRO_BITMAP *img_cair);
+int iniciar_player(player *p, float x, float y, float altura, float largura, ALLEGRO_BITMAP *img_parado, ALLEGRO_BITMAP *img_correndo, ALLEGRO_BITMAP *img_parado_abaixado, ALLEGRO_BITMAP *img_andando_abaixado, ALLEGRO_BITMAP *img_rolando, ALLEGRO_BITMAP *img_inverter, ALLEGRO_BITMAP *img_pular, ALLEGRO_BITMAP *img_cair, ALLEGRO_BITMAP *img_dano, ALLEGRO_BITMAP *img_morte);
 
 // Função para atualizar a posição do player, aplicando a gravidade e verificando colisões
 int atualizar_player(player *p, fase *f);
@@ -68,5 +73,8 @@ int pular_player(player *p);
 
 // Função para desenhar o player na tela usando o motor gráfico Allegro
 int desenhar_player(player *p, camera *c);
+
+// Função que da dano no player
+int dar_dano_player(player *p, float x_dano);
 
 #endif // PLAYER_H
