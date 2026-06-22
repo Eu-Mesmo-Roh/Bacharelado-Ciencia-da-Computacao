@@ -64,11 +64,17 @@ int atualizar_player(player *p, fase *f)
     // Aplicando a gravidade
     p->vel_y += 0.5f;
 
+    // Travando as ações após morrer
     if (p->hp <= 0)
     {
         p->movendo_para_direita = false;
         p->movendo_para_esquerda = false;
         p->jump_buffer = 0;
+
+        p->vel_x *= (p->no_chao ? 0.85f : 0.98f);
+
+        if (p->vel_x > -0.1f && p->vel_x < 0.1f)
+            p->vel_x = 0.0f;
 
         if (p->abaixado)
         {
@@ -79,16 +85,18 @@ int atualizar_player(player *p, fase *f)
 
     }
 
+    // Se o player esta rolando diminui o tempo de invulnerabilidade
     if (p->timer_invuleravel > 0)
         p->timer_invuleravel--;
 
+    // Se toma dano roda o tempo de knockback
     if(p->timer_knockback > 0)
     {
         p->timer_knockback--;
         if(p->timer_knockback <= 0)
             p->tomando_dano = false;
     }
-
+    // frames para pular caso caia da plataforma
     if (p->no_chao)
         p->coyote_time = 6;
     else
@@ -107,15 +115,6 @@ int atualizar_player(player *p, fase *f)
 
     if (p->jump_buffer > 0)
         p->jump_buffer--;
-
-    if (p->hp <= 0)
-    {
-        // Estado de morte
-        p->vel_x *= (p->no_chao ? 0.85f : 0.98f);
-
-        if (p->vel_x > -0.1f && p->vel_x < 0.1f)
-            p->vel_x = 0.0f;
-    }
     
     else if (!p->tomando_dano)
     {
@@ -322,11 +321,12 @@ int atualizar_player(player *p, fase *f)
     p->timer_animacao++;
 
     if (p->rolamento) 
-        velocidade_frame = 4; // A velocidade rápida que definiu para o rolamento
+        velocidade_frame = 4;
     else if (p->sprite_atual == p->sprite_correndo) 
-        velocidade_frame = 5; // <-- Reduza este valor! (Teste 4, 5 ou 6). O padrão era 10.
+        velocidade_frame = 5;
     else if (p->sprite_atual == p->sprite_inverter)
     {
+        // resolvendo bug de sprite
         if (p->movendo_para_direita == p->movendo_para_esquerda)
             {
                 velocidade_frame = 999;
@@ -336,19 +336,19 @@ int atualizar_player(player *p, fase *f)
             velocidade_frame = 5; // Velocidade para a animação de escorregando para os dois lados
     }
     else if (p->sprite_atual == p->sprite_pular || p->sprite_atual == p->sprite_cair)
-        velocidade_frame = 5; // Velocidade para as animações de pular e cair (sem animação, apenas um frame)
+        velocidade_frame = 5; // Velocidade para as animações de pular e cair
     else if (p->sprite_atual == p->sprite_parado_abaixado)
-        velocidade_frame = 1; // Velocidade para o sprite parado abaixado (sem animação, apenas um frame)
+        velocidade_frame = 1; // Velocidade para o sprite parado abaixado
     else if (p->sprite_atual == p->sprite_dano)
         velocidade_frame = 10;
     else if (p->sprite_atual == p->sprite_morte)
         velocidade_frame = 8;
     else if (p->sprite_atual == p->sprite_andando_abaixado)
-        velocidade_frame = 6; // Pode querer que o rastejo seja um pouco mais rápido também
+        velocidade_frame = 6; 
     else 
-        velocidade_frame = 10; // Velocidade lenta e suave para quando está Parado (Idle) ou Agachado Parado
+        velocidade_frame = 10;
 
-    // Ajuste o valor para controlar a velocidade da animação
+    // Ajusta o valor para controlar a velocidade da animação
     if (p->timer_animacao >= velocidade_frame) 
     {
         p->timer_animacao = 0;
@@ -370,7 +370,7 @@ int atualizar_player(player *p, fase *f)
         else if (p->sprite_atual == p->sprite_dano)
             max_frames = 1;
         else if (p->sprite_atual == p->sprite_morte)
-            max_frames = 10;
+            max_frames = 10; // Número de frames para as animações de morte
 
         if(p->frame_atual >= max_frames)
         {
@@ -384,6 +384,7 @@ int atualizar_player(player *p, fase *f)
                 p->rolamento = false;
                 p->vel_x = 0.0f; // Para o movimento horizontal após o rolamento
 
+                // Se o jogdor não estiver pressionando o agachado o personagem volta a posição normal
                 if(!p->abaixado)
                 {
                     if (p->altura != p->altura_original)
@@ -391,11 +392,13 @@ int atualizar_player(player *p, fase *f)
                         // Restaura a altura original do player
                         compensacao_y = p->altura_original - p->altura;
                         p->altura = p->altura_original;
-                        p->y -= compensacao_y; // Ajusta a posição y para que o player
+                        // Ajusta a posição y para que o player
+                        p->y -= compensacao_y; 
                     }
                 }
 
-                p->frame_atual = max_frames - 1; // Mantém o último frame da animação de rolamento
+                // Mantém o último frame da animação de rolamento
+                p->frame_atual = max_frames - 1; 
             }
             else if(p->sprite_atual == p->sprite_parado_abaixado || p->sprite_atual == p->sprite_inverter || p->sprite_atual == p->sprite_pular || p->sprite_atual == p->sprite_cair)
                 p->frame_atual = max_frames - 1; // Mantém o último frame da animação de rolamento
@@ -403,8 +406,6 @@ int atualizar_player(player *p, fase *f)
                 p->frame_atual = 0; // Reinicia a animação para os outros
         }
     }
-
-
 
     return 1; // Sucesso
 }
@@ -465,8 +466,10 @@ int desenhar_player(player *p, camera *c)
         // Fator de escala para aumentar o tamanho do sprite
         escala = 2.0f; 
 
-        offset_x = 0.0f; // Variável para ajustar o posicionamento horizontal do sprite
-        offset_y = 0.0f; // Variável para ajustar o posicionamento vertical do sprite
+        // Variável para ajustar o posicionamento horizontal do sprite
+        offset_x = 0.0f; 
+        // Variável para ajustar o posicionamento vertical do sprite
+        offset_y = 0.0f; 
 
         desenhar_invertido = p->virado_para_esquerda;
 
@@ -513,18 +516,20 @@ int desenhar_player(player *p, camera *c)
             offset_y = 85.0f; // Puxa o desenho para cima    
         }
 
-        // Supondo que cada frame tenha 80 pixels de largura
+        // Recorte da folha de sprites
         int pos_x_recorte = p->frame_atual * 120; 
 
-        ALLEGRO_COLOR cor_hitbox;
+        // usado em teste de hitbox
+        /* ALLEGRO_COLOR cor_hitbox;
         if (p->rolamento)
             cor_hitbox = al_map_rgb(0, 0, 255);
         else
             cor_hitbox = al_map_rgb(255, 0, 0);
 
-        al_draw_rectangle(p->x - c->x, p->y - c->y, p->x + p->largura - c->x, p->y + p->altura - c->y, cor_hitbox, 2.0f);
+        al_draw_rectangle(p->x - c->x, p->y - c->y, p->x + p->largura - c->x, p->y + p->altura - c->y, cor_hitbox, 2.0f); */
 
-        if(p->hp <= 0 || p->tomando_dano || p->timer_invuleravel <= 0 || p->timer_invuleravel % 4 < 2) // Pisca o sprite quando estiver invulnerável
+        // Pisca o sprite quando estiver invulnerável
+        if(p->hp <= 0 || p->tomando_dano || p->timer_invuleravel <= 0 || p->timer_invuleravel % 4 < 2) 
             al_draw_scaled_bitmap(p->sprite_atual, pos_x_recorte, 0, 120, 80, (p->x - c->x) - offset_x, (p->y - c->y) - offset_y, 120 * escala, 80 * escala, flags);
     }
 

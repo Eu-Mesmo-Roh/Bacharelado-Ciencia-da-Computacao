@@ -50,15 +50,24 @@ void desenhar_background(background *bg, camera *c)
     draw_w_ceu = bg->w_ceu * escala_ceu;
     draw_w_montanha = bg->w_montanha * escala_montanha;
     draw_w_green = bg->w_green * escala_green;
-
-    // Calculando o scrolling do fundo
-    offset_ceu = -fmod(c->x * bg->vel_ceu, draw_w_ceu);
-    offset_montanha = -fmod(c->x * bg->vel_montanha, draw_w_montanha);
-    offset_green = -fmod(c->x * bg->vel_green, draw_w_green);
     
-    // Desenhando as camadas
+    // Rolamentos de Background
+    // Céu
+    float mod_ceu = fmod(c->x * bg->vel_ceu, draw_w_ceu);
+    if (mod_ceu < 0) mod_ceu += draw_w_ceu;
+    offset_ceu = -mod_ceu;
 
-    // Desenha o Céu até cobrir toda a largura da tela (tela_w)
+    // Montanha
+    float mod_montanha = fmod(c->x * bg->vel_montanha, draw_w_montanha);
+    if (mod_montanha < 0) mod_montanha += draw_w_montanha;
+    offset_montanha = -mod_montanha;
+
+    // Colinas Verdes
+    float mod_green = fmod(c->x * bg->vel_green, draw_w_green);
+    if (mod_green < 0) mod_green += draw_w_green;
+    offset_green = -mod_green;
+
+    // Desenha o Céu até cobrir toda a largura da tela
     pos_x = offset_ceu;
     while (pos_x < bg->tela_w)
     {
@@ -85,4 +94,3 @@ void desenhar_background(background *bg, camera *c)
         pos_x += draw_w_green;
     }
 }
-

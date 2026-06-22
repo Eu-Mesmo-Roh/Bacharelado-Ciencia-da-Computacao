@@ -28,7 +28,7 @@ void iniciar_armadilha(armadilha *a, float x, float y, float largura, float altu
 
     // Inicialização do bloco movel
     a->x_inicial = x;
-    a->limite_patrulha = 150.0f;
+    a->limite_patrulha = 350.0f;
 }
 
 void atualizar_armadilha(armadilha *a)
@@ -60,7 +60,7 @@ void atualizar_armadilha(armadilha *a)
         
         case armadilha_lanca_retratil:
         {
-            // A Tabela de Pesquisa: de frames
+            // A Tabela de Pesquisa de frames
             static const int ordem_frames[] = 
             {
                 // Fase de Espera
@@ -118,7 +118,7 @@ void atualizar_armadilha(armadilha *a)
                 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7
             };
             
-            // Temos exatamente 30 números no array
+            // Quantidade de itens no array
             int total_passos = 30; 
             
             // CORREÇÃO: 180 ticks / 30 passos = 6 ticks por frame.
@@ -133,7 +133,7 @@ void atualizar_armadilha(armadilha *a)
             // Controle do Fogo começando no frame 18 e indo até 0 30
             if (passo_atual >= 18 && passo_atual < 30) 
             {
-                a->estado_ativo = true; // Queima!
+                a->estado_ativo = true;
                 
                 // Roda a animação independente das chamas
                 a->timer_animacao++;
@@ -143,7 +143,7 @@ void atualizar_armadilha(armadilha *a)
                 }
             } 
             else 
-                // Seguro, o fogo apagou
+                // O fogo apagou
                 a->estado_ativo = false; 
 
             // Reseta para o próximo ciclo
@@ -215,39 +215,34 @@ void desenhar_armadilha(armadilha *a, camera *c)
         
         al_draw_scaled_bitmap(a->sprite, frame_x * w, 0, w, h, draw_x, draw_y_ajustado, a->largura, altura_ajustada, 0);
     }
-    
-    // Desenho especifico do bloco movel
+
     // Desenho especifico do bloco movel
     else if (a->tipo == armadilha_bloco_movel)
     {
         w = a->largura_frame;
-        h = 32; // Mantemos a altura cravada em 32 para pegar só a primeira linha
+        h = 32; // Mantendo a altura cravada em 32 para pegar só a primeira linha da sprite
         pos_x_recorte = a->frame_atual * w;
 
-        // --- O TRUQUE MÁGICO: ZOOM ---
-        // Aumente este valor (ex: 1.5f, 1.8f, 2.0f) para a imagem crescer 
-        // até o espinho sólido encostar na borda da caixa amarela!
+        // Zoom necessario para o espinho movel
         float zoom = 1.1f; 
 
         proporcao = a->largura / w;
         
-        // Calculamos o tamanho visual expandido
+        // Calculando o tamanho
         float draw_w = a->largura * zoom;
         float draw_h = (h * proporcao) * zoom;
 
-        // Calculamos o recuo para garantir que o zoom aconteça a partir do centro da hitbox
+        // Calculando para que o zoom aconteça a partir do centro da hitbox
         float ajuste_centro_x = (draw_w - a->largura) / 2.0f;
         float ajuste_centro_y = (draw_h - a->altura) / 2.0f;
 
-        // Posições finais na tela já com a câmera, o offset manual e o ajuste do zoom
+        // Posições finais na tela
         float final_draw_x = (a->x - c->x) - ajuste_centro_x + a->offset_x;
         float final_draw_y = (a->y - c->y) - ajuste_centro_y + a->offset_y;
         
         flag_espelho = (a->vel_x < 0) ? ALLEGRO_FLIP_HORIZONTAL : 0;
 
-        al_draw_scaled_bitmap(a->sprite, pos_x_recorte, 0, w, h, 
-                            final_draw_x, final_draw_y, 
-                            draw_w, draw_h, flag_espelho);
+        al_draw_scaled_bitmap(a->sprite, pos_x_recorte, 0, w, h, final_draw_x, final_draw_y, draw_w, draw_h, flag_espelho);
     }
 
     // Desenho padrao para as outras armadilhas
@@ -272,14 +267,11 @@ void desenhar_armadilha(armadilha *a, camera *c)
         altura_fogo = al_get_bitmap_height(a->sprite_secundario) * escala;
         draw_y_fogo = (a->y - c->y) - altura_fogo;
 
-        al_draw_scaled_bitmap(a->sprite_secundario, pos_x_fogo, 0, 
-                            largura_fogo, al_get_bitmap_height(a->sprite_secundario), 
-                            (a->x - c->x), draw_y_fogo, 
-                            largura_fogo * escala, altura_fogo, 0);
+        al_draw_scaled_bitmap(a->sprite_secundario, pos_x_fogo, 0, largura_fogo, al_get_bitmap_height(a->sprite_secundario), (a->x - c->x), draw_y_fogo, largura_fogo * escala, altura_fogo, 0);
     }
 
     // Debug Hitbox
-    al_draw_rectangle(a->x - c->x, a->y - c->y, 
+    /* al_draw_rectangle(a->x - c->x, a->y - c->y, 
                     a->x + a->largura - c->x, a->y + a->altura - c->y, 
-                    al_map_rgb(255, 255, 0), 1.0f);
+                    al_map_rgb(255, 255, 0), 1.0f); */
 }

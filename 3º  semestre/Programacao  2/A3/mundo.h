@@ -10,8 +10,12 @@ typedef struct plataforma
     float largura, altura;
     float vel_x, vel_y;
     bool invisivel;
+
+    ALLEGRO_BITMAP *sprite;
+    float offset_x, offset_y, escala;
 }plataforma;
 
+// Estrutura para representar a fase no jogo
 typedef struct fase
 {
     plataforma *plataformas;
@@ -23,17 +27,19 @@ typedef struct fase
     int capacidade_armadilhas;
 }fase;
 
+
 // Estrutura para representar a câmera no jogo
+// Fiz desta forma por motivos de bugs com compilação
 typedef struct camera camera;
 
 // Função para carregar um mapa a partir de um arquivo
-int carregar_mapa(fase *f, const char *nome_arquivo, ALLEGRO_BITMAP *img_suriken, ALLEGRO_BITMAP *img_espinho, ALLEGRO_BITMAP *img_lanca, ALLEGRO_BITMAP *img_fogo_caixa, ALLEGRO_BITMAP *img_fogo_chama, ALLEGRO_BITMAP *img_bloco);
+int carregar_mapa(fase *f, const char *nome_arquivo, ALLEGRO_BITMAP *img_suriken, ALLEGRO_BITMAP *img_espinho, ALLEGRO_BITMAP *img_lanca, ALLEGRO_BITMAP *img_fogo_caixa, ALLEGRO_BITMAP *img_fogo_chama, ALLEGRO_BITMAP *img_bloco, ALLEGRO_BITMAP *img_plataforma_terra, ALLEGRO_BITMAP *img_plataforma_flutuante);
 
 // Função para iniciar a fase, alocando memória para as plataformas
 int iniciar_fase(fase *f);
 
 // Função para adicionar uma plataforma à fase
-int adicionar_plataforma(fase *f, float x, float y, float largura, float altura, bool invisivel);
+int adicionar_plataforma(fase *f, float x, float y, float largura, float altura, bool invisivel, ALLEGRO_BITMAP *img);
 
 // Atualiza a fase para animar as armadilhas
 int atualizar_fase(fase *f);

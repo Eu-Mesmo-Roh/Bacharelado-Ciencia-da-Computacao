@@ -3,6 +3,7 @@
 
 #include "motor_grafico.h"
 
+// Estrutura para representar os diversos estados do jogo
 typedef enum
 {
     ESTADO_MENU_PRINCIPAL,
@@ -14,18 +15,21 @@ typedef enum
     ESTADO_SAIR
 } estado_jogo;
 
+// Estrutura de opções do menu
 typedef struct menu
 {
     // 0 = Jogar, 1 = Opções, 2 = Sair
     int opcao_selecionada;
     int total_opcoes;
-    bool ativo;
 } menu;
 
-int iniciar_menu(menu *m);
+// Função que inicializa o menu do jogo
+void iniciar_menu(menu *m);
 
-int tratar_imput_menu(menu *m, int tecla, estado_jogo *estado_atual);
+// Função que trata as ações no menu
+void tratar_imput_menu(menu *m, int tecla, estado_jogo *estado_atual);
 
-int desenhar_menu(menu *m, ALLEGRO_FONT *fonte);
+// Função que desenha o menu principal
+void desenhar_menu(menu *m, ALLEGRO_FONT *fonte);
 
 #endif // MENU_H

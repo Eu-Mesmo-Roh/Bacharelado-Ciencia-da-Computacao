@@ -20,7 +20,7 @@ int atualizar_camera(camera *c, player *p)
     pe_do_player = p->y + p->altura;
     c->y = pe_do_player - (p->altura_original / 2.0f) - (c->altura_tela / 2.0f);
 
-    // Garantindo que a câmera não mostre áreas fora do mundo do jogo (assumindo que o mundo começa em (0, 0))
+    // Garantindo que a câmera não mostre áreas fora do mundo do jogo
     if (c->x < 0)
         c->x = 0;
     if (c->y > 50)

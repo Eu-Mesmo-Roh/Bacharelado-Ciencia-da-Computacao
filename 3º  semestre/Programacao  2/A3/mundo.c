@@ -2,7 +2,7 @@
 #include "camera.h"
 #include "motor_grafico.h"
 
-int adicionar_plataforma(fase *f, float x, float y, float largura, float altura, bool invisivel)
+int adicionar_plataforma(fase *f, float x, float y, float largura, float altura, bool invisivel, ALLEGRO_BITMAP *img)
 {
     plataforma *nova_lista;
     int nova_capacidade, indice_nova_plataforma;
@@ -33,6 +33,12 @@ int adicionar_plataforma(fase *f, float x, float y, float largura, float altura,
     f->plataformas[indice_nova_plataforma].invisivel = invisivel;
     f->plataformas[indice_nova_plataforma].vel_x = 0.0f;
     f->plataformas[indice_nova_plataforma].vel_y = 0.0f;
+    // Configurações de sprites das plataformas
+    f->plataformas[indice_nova_plataforma].sprite = img;
+    f->plataformas[indice_nova_plataforma].offset_x = 0.0f;
+    f->plataformas[indice_nova_plataforma].offset_y = 0.0f;
+    f->plataformas[indice_nova_plataforma].escala = 1.0f;
+
     f->num_plataformas++;
     
     return 1; // Sucesso
@@ -43,6 +49,7 @@ int adicionar_armadilha_fase(fase *f, float x, float y, float largura, float alt
     armadilha *nova_lista;
     int nova_capacidade, indice_nova_armadilha;
 
+    // Verifica se a capacidade de armadilhas encheu, se sim dobra o tamanho para usar novas armadilhas
     if (f->num_armadilhas >= f->capacidade_armadilhas)
     {
         if (f->capacidade_armadilhas == 0)
@@ -68,7 +75,7 @@ int adicionar_armadilha_fase(fase *f, float x, float y, float largura, float alt
     return 1;
 }
 
-int carregar_mapa(fase *f, const char *nome_arquivo, ALLEGRO_BITMAP *img_suriken, ALLEGRO_BITMAP *img_espinho, ALLEGRO_BITMAP *img_lanca, ALLEGRO_BITMAP *img_fogo_caixa, ALLEGRO_BITMAP *img_fogo_chama, ALLEGRO_BITMAP *img_bloco)
+int carregar_mapa(fase *f, const char *nome_arquivo, ALLEGRO_BITMAP *img_suriken, ALLEGRO_BITMAP *img_espinho, ALLEGRO_BITMAP *img_lanca, ALLEGRO_BITMAP *img_fogo_caixa, ALLEGRO_BITMAP *img_fogo_chama, ALLEGRO_BITMAP *img_bloco, ALLEGRO_BITMAP *img_plataforma_terra, ALLEGRO_BITMAP *img_plataforma_flutuante)
 {
     FILE *mapa;
     char linha[256], *token;
@@ -98,22 +105,28 @@ int carregar_mapa(fase *f, const char *nome_arquivo, ALLEGRO_BITMAP *img_suriken
         token = strtok(NULL, ", \n\r");
         if (token != NULL)
             x = atof(token);
-        else
-            { printf("DEBUG: Falhou ao ler X na linha %d\n", contador_linhas); continue; }
+
+        // Teste para criação de fases e debugs
+        /* else
+            { printf("DEBUG: Falhou ao ler X na linha %d\n", contador_linhas); continue; } */
         
         // Token para o Y do elemento
         token = strtok(NULL, ", \n\r");
         if (token != NULL)
             y = atof(token);
-        else 
-            { printf("DEBUG: Falhou ao ler Y na linha %d\n", contador_linhas); continue; }
+
+        // Teste para criação de fases e debugs
+        /* else 
+            { printf("DEBUG: Falhou ao ler Y na linha %d\n", contador_linhas); continue; } */
         
         // Token para a largura do elemento
         token = strtok(NULL, ", \n\r");
         if (token != NULL)
             largura = atof(token);
-        else
-            { printf("DEBUG: Falhou ao ler LARGURA na linha %d\n", contador_linhas); continue; }
+        
+        // Teste para criação de fases e debugs
+        /* else
+            { printf("DEBUG: Falhou ao ler LARGURA na linha %d\n", contador_linhas); continue; } */
 
         // Token para a altura do elemento e definição do tipo
         token = strtok(NULL, ", \n\r");
@@ -121,17 +134,41 @@ int carregar_mapa(fase *f, const char *nome_arquivo, ALLEGRO_BITMAP *img_suriken
         {
             altura = atof(token);
 
-            printf("DEBUG: Linha %d Carregada com Sucesso -> Tipo: %d | X: %.0f | Y: %.0f | Larg: %.0f | Alt: %.0f\n", 
-                    contador_linhas, tipo_elemento, x, y, largura, altura);
+            // Teste para criação de fases e debugs
+            /* printf("DEBUG: Linha %d Carregada com Sucesso -> Tipo: %d | X: %.0f | Y: %.0f | Larg: %.0f | Alt: %.0f\n", 
+                    contador_linhas, tipo_elemento, x, y, largura, altura); */
 
-            // Decide o que criar baseado no tipo informado CSV
-            if (tipo_elemento == 0)
-                adicionar_plataforma(f, x, y, largura, altura, false);
+            /*----- Decide o que criar baseado no tipo informado CSV -----*/
+            // Chão principal
+            if (tipo_elemento == 0) 
+            {
+                adicionar_plataforma(f, x, y, largura, altura, false, img_plataforma_terra);
+                
+                int ultimo = f->num_plataformas - 1;
+                // configurações para sprites
+                f->plataformas[ultimo].offset_x = -5.0f; 
+                f->plataformas[ultimo].offset_y = 0.0f; 
+
+                f->plataformas[ultimo].escala = 3.2f;
+            }
+            // Plataforma Flutuante
+            else if (tipo_elemento == 6) 
+            {
+
+                adicionar_plataforma(f, x, y, largura, altura, false, img_plataforma_flutuante);
+
+                int ultimo = f->num_plataformas - 1;
+                f->plataformas[ultimo].offset_x = -2.0f;
+                f->plataformas[ultimo].offset_y = 0.0f; 
+
+                f->plataformas[ultimo].escala = 2.3f;
+            }
             
-            // Suriken (8 frames, corte de 32px)
+            // Suriken
             else if (tipo_elemento == 1)
                 adicionar_armadilha_fase(f, x, y, largura, altura, armadilha_suriken, img_suriken, NULL, 8, 32);
 
+            // Espinho
             else if (tipo_elemento == 2)
             {
                 adicionar_armadilha_fase(f, x, y, largura, altura, armadilha_espinho_estatico, img_espinho, NULL, 1, 32);
@@ -149,7 +186,7 @@ int carregar_mapa(fase *f, const char *nome_arquivo, ALLEGRO_BITMAP *img_suriken
             // lança-chamas
             else if (tipo_elemento == 4)
             {
-                adicionar_plataforma(f, x, y, largura, altura, true);
+                adicionar_plataforma(f, x, y, largura, altura, true, img_plataforma_terra);
                 adicionar_armadilha_fase(f, x, y, largura, altura, armadilha_fogo_temporizado, img_fogo_caixa, img_fogo_chama, 14, 16);
             }
 
@@ -212,16 +249,48 @@ int desenhar_fase(fase *f, camera *c)
     {
         p = &f->plataformas[i];
 
-        // Se for invisível, aciona a visão de Debug!
         if (p->invisivel)
-        {
-            // bloco de Debug
-            al_draw_rectangle(p->x - c->x, p->y - c->y, (p->x + p->largura) - c->x, (p->y + p->altura) - c->y, al_map_rgb(255, 0, 0), 2.0f);
-            continue; 
-        }
+            continue;
 
-        // Se for normal, desenha verde sólido
-        al_draw_filled_rectangle(p->x - c->x, p->y - c->y, (p->x + p->largura) - c->x, (p->y + p->altura) - c->y, al_map_rgb(0, 255, 0));
+        if (p->sprite) 
+        {
+            // Ajustando a escala da sprite
+            float escala = p->escala; 
+            
+            float w_original = al_get_bitmap_width(p->sprite);
+            float h_original = al_get_bitmap_height(p->sprite);
+            
+            // O tamanho que a imagem vai ocupar na tela depois do zoom
+            float w_escalado = w_original * escala;
+            float h_escalado = h_original * escala;
+            
+            float start_x = (p->x - c->x) + p->offset_x;
+            float start_y = (p->y - c->y) + p->offset_y;
+
+            // Loop saltando no tamanho que escalamos
+            for (float dx = 0; dx < p->largura; dx += w_escalado) 
+            {
+                for (float dy = 0; dy < p->altura; dy += h_escalado) 
+                {
+                    // Descobrindo o espaço de tela dentro da hitbox
+                    float dest_w = w_escalado;
+                    float dest_h = h_escalado;
+                    
+                    if (dx + dest_w > p->largura) dest_w = p->largura - dx;
+                    if (dy + dest_h > p->altura) dest_h = p->altura - dy;
+                    
+                    // Converte esse espaço de tela de volta para o tamanho original da imagem para fazer o recorte
+                    float src_w = dest_w / escala;
+                    float src_h = dest_h / escala;
+                    
+                    // Desenha a imagem cortada e escalada ao mesmo tempo
+                    al_draw_scaled_bitmap(p->sprite, 0, 0, src_w, src_h, start_x + dx, start_y + dy, dest_w, dest_h, 0);
+                }
+            }
+        }
+        else
+            // Desenha o retangulo caso a sprite não funcione
+            al_draw_filled_rectangle(p->x - c->x, p->y - c->y, p->x + p->largura - c->x, p->y + p->altura - c->y, al_map_rgb(0, 255, 0));  
     }
 
     // Desenha as armadilhas

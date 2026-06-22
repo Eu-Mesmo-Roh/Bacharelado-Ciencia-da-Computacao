@@ -4,6 +4,7 @@
 #include "motor_grafico.h"
 #include "camera.h"
 
+// Estrutura criada para os tipos de armadilhas
 typedef enum
 {
     armadilha_suriken = 1,
@@ -13,6 +14,7 @@ typedef enum
     armadilha_bloco_movel = 5
 }tipo_armadilha;
 
+// Estrutura das armadilhas
 typedef struct armadilha
 {
     float x, y;

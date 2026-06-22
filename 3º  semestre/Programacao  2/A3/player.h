@@ -25,7 +25,6 @@ typedef struct player
     bool tomando_dano;
 
     /* Outras interações do player */
-
     // Variável para indicar se o player está abaixado
     bool abaixado;
     float altura_original;

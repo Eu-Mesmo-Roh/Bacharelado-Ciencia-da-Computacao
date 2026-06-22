@@ -5,16 +5,17 @@
 
 typedef struct camera camera;
 
+// Estrutura para criar o background da fase
 typedef struct background
 {
+    // Sprites de background
     ALLEGRO_BITMAP *fundo_ceu;
     ALLEGRO_BITMAP *fundo_montanha;
     ALLEGRO_BITMAP *fundo_green;
 
+    // Variaveis para configurar as sprites do background
     float vel_ceu, vel_montanha, vel_green;
-
     float w_ceu, w_montanha, w_green;
-
     float tela_w, tela_h;
 }background;
 
