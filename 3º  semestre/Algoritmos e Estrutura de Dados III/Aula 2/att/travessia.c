@@ -1,10 +1,7 @@
-#ifndef TRAVESSIA_H
-#define TRAVESSIA_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "arvore.h"
-
+#include "travessia.h"
 
 void pre_order(pessoa *raiz)
 {
@@ -46,5 +43,3 @@ void pos_order(pessoa *raiz)
     printf("Idade: %d\n", raiz->idade);
     printf("CPF: %ls\n\n", raiz->chave);
 }
-
-#endif
