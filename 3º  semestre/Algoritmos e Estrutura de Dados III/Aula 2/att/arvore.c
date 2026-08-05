@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "arvore.h"
 
 pessoa* criar_pessoa(char nome[25], int idade, long CPF)
@@ -48,4 +49,31 @@ pessoa* inserir_pessoa(pessoa *raiz, pessoa *nova_pessoa)
         inserir_pessoa(raiz->esq, nova_pessoa);
     
     return raiz;
+}
+
+int calcularAltura(pessoa *raiz)
+{
+    int altEsq, altDir;
+
+    if (!raiz)
+        return -1;
+    
+    altEsq = calcularAltura(raiz->esq);
+    altDir = calcularAltura(raiz->dir);
+
+    if (altEsq > altDir)
+        return altEsq + 1;
+    else
+        return altDir + 1;
+}
+
+void liberar_arvore(pessoa *raiz)
+{
+    if(!raiz)
+        return;
+
+    liberar_arvore(raiz->esq);
+    liberar_arvore(raiz->dir);
+
+    free(raiz);
 }

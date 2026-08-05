@@ -6,12 +6,14 @@
 #include "arvore.h"
 
 // Faz a travessia em pré-ordem
-void pre_order(pessoa *raiz);
+void pre_ordem(pessoa *raiz);
 
 // Faz a travessia em-ordem
 void em_ordem(pessoa *raiz);
 
 // Faz a travessia em pos-ordem
-void pos_order(pessoa *raiz);
+void pos_ordem(pessoa *raiz);
+
+/* Para fazer depois: criar as travessias de forma não recursiva*/
 
 #endif

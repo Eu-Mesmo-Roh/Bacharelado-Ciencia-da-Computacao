@@ -3,43 +3,44 @@
 #include "arvore.h"
 #include "travessia.h"
 
-void pre_order(pessoa *raiz)
+void pre_ordem(pessoa *raiz)
 {
     if(!raiz)
         return;
-    
+        
     printf("Nome: %s\n", raiz->nome);
     printf("Idade: %d\n", raiz->idade);
-    printf("CPF: %ls\n\n", raiz->chave);
+    printf("CPF: %ld\n\n", raiz->chave);
 
-    pre_order(raiz->esq);
-    pre_order(raiz->dir);
+    pre_ordem(raiz->esq);
+    pre_ordem(raiz->dir);
 }
 
 void em_ordem(pessoa *raiz)
 {
     if(!raiz)
         return;
+
     
     em_ordem(raiz->esq);
 
     printf("Nome: %s\n", raiz->nome);
     printf("Idade: %d\n", raiz->idade);
-    printf("CPF: %ls\n\n", raiz->chave);
+    printf("CPF: %ld\n\n", raiz->chave);
 
     em_ordem(raiz->dir);
 }
 
-void pos_order(pessoa *raiz)
+void pos_ordem(pessoa *raiz)
 {
     if(!raiz)
         return;
     
-    pos_order(raiz->esq);
+    pos_ordem(raiz->esq);
 
-    pos_order(raiz->dir);
+    pos_ordem(raiz->dir);
 
     printf("Nome: %s\n", raiz->nome);
     printf("Idade: %d\n", raiz->idade);
-    printf("CPF: %ls\n\n", raiz->chave);
+    printf("CPF: %ld\n\n", raiz->chave);
 }
