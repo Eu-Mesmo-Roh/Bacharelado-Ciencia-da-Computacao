@@ -1,0 +1,9 @@
+A matéria realmente passa pelos conteúdos de base, mas com um nível de exigência e profundidade que eu não estava acostumado.
+
+Nas aulas, fizemos um mergulho intenso em toda a parte de álgebra fundamental. Trabalhamos muito com manipulação de expressões, fatoração e aquelas inequações gigantes. Depois, o foco foi para o estudo detalhado de funções — passamos um bom tempo desenhando gráficos, analisando domínios e entendendo o comportamento de funções modulares, exponenciais e logarítmicas. Para fechar, entramos de cabeça na trigonometria, dissecando o ciclo trigonométrico e as dezenas de identidades.
+
+A maior dificuldade, tanto para mim quanto para a maior parte da turma, foi lidar com os vícios e as lacunas que a gente nem sabia que trazia do colégio. Qualquer errinho de sinal ou simplificação apressada em uma fração no meio do caminho já custava a questão inteira. Além disso, senti muito a mudança no rigor formal: já não bastava só "dar um jeito" intuitivo de chegar na resposta, era preciso justificar matematicamente e escrever o raciocínio da forma certa.
+
+A parte de trigonometria também foi um obstáculo pesado, porque pedia muita manipulação algébrica misturada com as fórmulas. E, claro, o ritmo da universidade pesou. As listas de exercícios eram imensas, e percebi na marra que só entender a explicação no quadro não adiantava nada; eu precisei sentar e resolver muita questão até ganhar a famosa agilidade lógica.
+
+Foi uma matéria suada e que exigiu muita resiliência, mas no fim das contas foi o que me tirou da zona de conforto e consertou a minha base antes da verdadeira pedreira dos Cálculos começar.
