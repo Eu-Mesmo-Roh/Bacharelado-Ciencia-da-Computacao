@@ -1,0 +1,18 @@
+O x86-64 é little ou big-endian?
+
+R: o X86-64 é little-endian, pois ele salva os bytes invertidos na memoria.
+
+
+O endianess do assembly é necessariamente o mesmo endianess do hexadecimal?
+
+R: Não, em assembly temos a notação comum que é a big-endian para representar o valor 0xAABBCCDD já o arquivo bin.hex escreve em little-endian que seria da forma contraria.
+
+
+Qual dos arquivos representa o endianess real da máquina?
+
+R: O arquivo.hex representa a a linguagem mais proxima da maquina.
+
+
+Associe suas respostas com a diferença entre assembly e linguagem de máquina.
+
+R: Creio que as maiores diferenças entre o assembly e a linguagem de máquina seja o entendimento do programador, pois o assembly foi feito para criar as instruções de maneira mais pratica. Já o .hex é a linguagem crua da maquina e a maneira em que ela faz as operações.
