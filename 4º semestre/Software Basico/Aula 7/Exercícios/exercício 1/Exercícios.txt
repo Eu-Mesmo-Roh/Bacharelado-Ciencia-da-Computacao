@@ -1,0 +1,14 @@
+1. Execute o programa da aula anterior (Ola) passo a passo com o GDB. Insira um breakpoint na instrução de comparação e
+verifique a cada passo o char armazenado na memória sendo comparado, e o resultado da comparação armazenado em eflags.
+
+R: Durante a excução do programa com o GDB podemos verificar que antes da entrada do loop as flags ativas no eflags são PF, ZF e IF.
+Mas apartir do ponto em que entramos no loop a percebemos que a flag ZF é dezativada, mas outra toma seu lugar sendo a CF.
+Na segunda rodada do laço a flag CF também desaparece ficando apenas as flags PF e IF na quarta Rodada do laço.
+Seguindo o código na quarta repetição nosso Ola já foi impresso porém ainda resta o "\n" desta forma o eflags nos mostra apenas a flag IF por duas rodadas.
+Por fim ao final do código ao testarmos novamente o eflags temos as seguintes flags ativas novamente: PF, ZF, IF
+
+
+2. Leia uma a string do teclado. Considere que a string tem no máximo 15 caracteres (salve na pilha). Converta todos os
+caracteres entre [a-z] para maiúsculo. Os demais caracteres devem permanecer inalterados. Escreva os caracteres (já
+convertidos) na tela. Analise o seu programa executando no GDB. Dica: Sempre salve os registradores relevantes na pilha
+antes de uma chamada de função, pois não temos como garantir se os valores serão restaurados.
