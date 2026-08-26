@@ -1,0 +1,11 @@
+1. Modifique o programa de exemplo dado em aula para que os endereços das variáveis sejam calculados a partir de
+RSP, ao invés de RBP.
+    R: programa anexado
+
+2. As últimas linhas do programa de exemplo são equivalente a um return 0 de um programa em C.
+
+a. Verifique que foi realmente esse o valor retornado ao Sistema Operacional.
+    R: Ao compilar o programa com o gcc e executalo, se usarmos o comando "echo $?", temos o valor de retorno da função
+
+b. Modifique esse valor, monte, e verifique novamente.
+    R: Modificando este valor adicionei o numero 27 e recompilei o programa, se usarmos novamente o comando echo $?, teremos o valor adicionado impresso no terminal.

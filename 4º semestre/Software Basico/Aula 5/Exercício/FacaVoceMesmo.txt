@@ -1,0 +1,9 @@
+Utilizando o GDB, responda:
+○ Qual é aproximadamente o endereço da primeira instrução?
+    R: No meu caso o endereço de memória é aproximadamente 0x401050.
+
+○ Onde a pilha começa?
+    R: A pilha começa pela base, sendo no topo da memória com o rbp e cresce para baixo seu endereço de memória é 0x7fffffffdc30.
+
+○ Onde o base pointer começa?
+    R: No meu programa o base pointer começa no endereço de memória 0x1 que seria na primeira instrução do programa.
