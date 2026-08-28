@@ -9,27 +9,29 @@ struct no
     struct no *pai;
 };
 
+// faz a criação do novo nó
 struct no *cria_no(int chave)
 {
-    struct no *n = malloc (sizeof(struct no));
+    struct no *novo = malloc (sizeof(struct no));
     
-    if (!n)
+    if (!novo)
         return NULL;
 
-    n->chave = chave;
-    n->fe = NULL;
-    n->fd = NULL;
-    n->pai = NULL;
+    novo->chave = chave;
+    novo->fe = NULL;
+    novo->fd = NULL;
+    novo->pai = NULL;
 
-    return n;
+    return novo;
 }
 
+// usado para arvores sem ponteiro para o pai
+
+/* 
 struct no *binary(struct no *raiz, int chave)
 {
     if (!raiz)
-    {
         return cria_no(chave);
-    }
 
     if (raiz->chave > chave)
         raiz->fe = binary(raiz->fe, chave);
@@ -38,17 +40,47 @@ struct no *binary(struct no *raiz, int chave)
     
     return raiz;
 }
+*/
 
+// Função auxiliar que faz a busca da posição correta para o novo nó
+struct no *auxbinary(struct no *raiz, int chave, struct no *pai)
+{
+    if (!raiz)
+    {
+        struct no *novo = cria_no(chave);
+
+        if (novo != NULL)
+            novo->pai = pai;
+
+        return novo;
+    }
+    
+    if (raiz->chave > chave)
+        raiz->fe = auxbinary(raiz->fe, chave, raiz);
+    else if (raiz->chave < chave)
+        raiz->fd = auxbinary(raiz->fd, chave, raiz);
+
+    return raiz;    
+}
+
+// chama a função auxiliar para que a raiz tenha seu pai null
+struct no *binary(struct no *raiz, int chave)
+{
+    return auxbinary(raiz, chave, NULL);
+}
+
+// imprime a arvore em ordem
 void imprimirT(struct no *raiz)
 {
     if (!raiz)
         return;
     
     imprimirT(raiz->fe);
-    printf("%d", raiz->chave);
+    printf("%d\n\n", raiz->chave);
     imprimirT(raiz->fd);
 }
 
+// Libera a arvore com travessia pós ordem
 void freeT(struct no *raiz)
 {
     if (raiz != NULL)
@@ -88,12 +120,9 @@ int main()
             printf("\nDigite a chave: ");
             scanf("%d", &chave);
 
-            struct no *novo_no = cria_no(chave);
+            raiz = binary(raiz, chave);
 
-
-            raiz = binary(novo_no, chave);
-
-            printf("*** Pessoa Cadastrada com sucesso ***\n\n");
+            printf("*** Nodo cadastrado com sucesso ***\n\n");
 
             break;
         }
@@ -106,7 +135,7 @@ int main()
             }
             
             printf("** Imprimindo em Em-ordem **\n");
-            em_ordem(raiz);
+            imprimirT(raiz);
             break;
 
         case 0:
@@ -119,8 +148,7 @@ int main()
         }
     } while (opcao != 0);
 
-
-
+    freeT(raiz);
 
     return 0;
 }

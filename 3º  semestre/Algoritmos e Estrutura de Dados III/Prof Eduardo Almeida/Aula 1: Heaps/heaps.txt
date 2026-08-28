@@ -1,0 +1,50 @@
+Relembrando um pouco de como funcionam as heaps.
+
+As heaps são usadas principalmente na maquina virtual Java, que faz a interação entre o 
+arquivo .Java e o Sistema Operacional.
+
+Elas são baseadas em filas de Prioridades.
+
+Heaps são consideradas Arvores de dados, neste caso temos uma arvore binaria não
+ordenada.
+
+Estrutura
+A estrutura da heap e de arvores no geral é dada da seguinte forma:
+Arvores na computação são performadas de cabeça para baixo, ou seja, sua
+raiz (nodo do topo), nodos internos (galhos da arvore) e por fim suas 
+folhas (nodos na camada mais baixa da arvore).
+
+Heapfy
+Podemos enxergar a Heap como um vetor onde começamos com o primeiro elemento na
+posição 1, e seus filhos esquerdo e direito serão dados respectivamente por i (valor da posição do elemento) * 2 e i*2+1.
+
+Max / Min heap
+Aqui começamos a criar uma hierarquia sobre os elementos da nossa arvore.
+No caso da Max - heap temos a seguinte propriedades:
+Todo nodo pai tem que ser maior ou igual aos seus filhos, assim recursivamente.
+Já no caso da Min - heap temos a seguinte propriedade:
+Todo nodo pai tem que ser menor ou igual aos seus filhos, assim recursivamente.
+
+Max / Min heapfy
+Essas são as ferramentas usadas para organizar de fato nossa heap conforme desejamos, elas
+funcionam da seguinte maneira:
+Começamos pelo nodo n/2, o ultimo nodo pai da estrutura e verificamos se ele e seus filhos estão
+seguindo a regra, caso sim, nada é feito, mas se a regra for quebrada concertamos trocando o pai
+com o filho que precisamos. Assim sucessivamente até a raiz.
+
+Inserção
+Uma inserção na heap sempre sera feita na camada mais baixa da arvore, ou seja, toda inserção é 
+uma folha, se a folha inserida for menor (ou maior no caso da min heap) que seu nodo pai
+não há mais nada a ser feito, mas ao inserir um nodo que fere a regra teremos que usar nossas
+ferramentas (Max / Min heapfy), para consertar a ordem dos elementos.
+
+Remoção
+Uma remoção na heap sempre sera feita trocando o nodo desejado com o ultimo nodo da
+heap, desta forma removendo do fim do vetor e utilizando as ferramentas de reorganização dos
+dados.
+
+HeapSort
+Por fim temos o HeapSort, que é nosso algoritmo de ordenação que usa tudo o que vimos
+anteriormente porem o nodo removido sempre sera a raiz, desta forma organizando de forma
+crescente no caso de uma min heap ou de forma decrescente no caso de uma max heap.
+
