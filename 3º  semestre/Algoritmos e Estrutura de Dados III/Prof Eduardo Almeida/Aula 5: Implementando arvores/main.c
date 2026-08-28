@@ -10,6 +10,8 @@ struct no
 };
 
 // faz a criação do novo nó
+// usado sem ponteiro para o pai
+/* 
 struct no *cria_no(int chave)
 {
     struct no *novo = malloc (sizeof(struct no));
@@ -20,14 +22,12 @@ struct no *cria_no(int chave)
     novo->chave = chave;
     novo->fe = NULL;
     novo->fd = NULL;
-    novo->pai = NULL;
 
     return novo;
 }
 
+// percorre a arvore e insere o nodo
 // usado para arvores sem ponteiro para o pai
-
-/* 
 struct no *binary(struct no *raiz, int chave)
 {
     if (!raiz)
@@ -40,7 +40,8 @@ struct no *binary(struct no *raiz, int chave)
     
     return raiz;
 }
-*/
+
+Tentativa de fazer a inserção com uma função auxiliar por conta do ponteiro pai. -forma pensada por mim.
 
 // Função auxiliar que faz a busca da posição correta para o novo nó
 struct no *auxbinary(struct no *raiz, int chave, struct no *pai)
@@ -64,10 +65,45 @@ struct no *auxbinary(struct no *raiz, int chave, struct no *pai)
 }
 
 // chama a função auxiliar para que a raiz tenha seu pai null
-struct no *binary(struct no *raiz, int chave)
+ struct no *binary(struct no *raiz, int chave)
 {
     return auxbinary(raiz, chave, NULL);
 }
+*/
+
+
+// faz a criação do novo nó
+// usado com ponteiro para o pai
+struct no *cria_no(struct no *pai, int chave)
+{
+    struct no *novo = malloc (sizeof(struct no));
+    
+    if (!novo)
+    return NULL;
+    
+    novo->chave = chave;
+    novo->fe = NULL;
+    novo->fd = NULL;
+    novo->pai = pai;
+    
+    return novo;
+}
+
+// percorre a arvore e insere o nodo
+// usado para arvores com ponteiro para o pai
+struct no *binary(struct no *raiz, int chave)
+{
+    if (!raiz)
+        return cria_no(raiz, chave);
+
+    if (raiz->chave > chave)
+        raiz->fe = binary(raiz->fe, chave);
+    else if (raiz->chave < chave)
+        raiz->fd = binary(raiz->fd, chave);
+    
+        return raiz;
+}
+
 
 // imprime a arvore em ordem
 void imprimirT(struct no *raiz)
