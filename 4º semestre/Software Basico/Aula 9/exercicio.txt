@@ -1,0 +1,23 @@
+1. Crie um programa que possui um vetor (por exemplo, uma string a ser impressa) em .rodata.
+a. Faça o programa e execute normalmente.
+R: Feito
+
+b. Tente modificar algum caractere da string antes de imprimir. O que acontece?
+R: O programa me retorna uma falha de segmentação
+
+c. Crie um vetor do mesmo tamanho da string em .bss. Copie a string original para esse novo vetor, mas colocando todo o texto em caixa
+alta. Cuidado com caracteres que não estão no intervalo [a-z] (não os modifique).
+
+
+2. Modifique o programa dado na aula passada para imprimir o código do valor na tabela ASCII, seguido de seu
+caractere.
+Ex.: 65 A
+
+
+3. Crie um programa que aloca dois vetores de inteiros, vet1 e vet2, de 64 posições via .bss. Preencha os vetores
+com valores quaisquer. O programa deve:
+
+a. Somar o i-ésimo elemento de vet1 com o i-ésimo elemento de vet2, e armazenar em um terceiro vetor. O terceiro vetor (de 64 posições)
+deve estar na pilha do main.
+
+b. Mostrar na tela o vetor resultante.
