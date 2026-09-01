@@ -1,0 +1,21 @@
+1. Faça o programa echo da aula.
+R: Feito
+
+2. Leia e entenda o blog do post. Depois, compile os programa usando o gcc como no post. Desmonte os binários
+utilizando ojbdump, e prove (ou não) que o post está correto.
+    https://prlalmeida.com.br/knowledge-base/declare-the-variables-in-the-loop-initialization
+
+R: Realmente ao compilar os dois programas com nenhuma 
+otimização, obtemos os códigos com diferenças entre tamanhos 
+da memoria utilizados, já que sem nenhuma otimização (-O0) o 
+código que mantem as variaveis dendro dos loops estaria 
+utilizando mais memoria do que o código que as declara fora.
+Porém ao usarmos alguma otimizações, obtemos o mesmo resultado 
+para os dois códigos.
+Isso nos mostra que declarar as variaveis dentro dos loops pode
+ser mais seguro quanto a construção do código e tão otimizado
+quanto ao segundo código proposto.
+
+3. Modifique o programa para ler dois caracteres [0..4] do teclado. Converta os caracteres em números. Some e
+mostre os resultado na tela.
+R:
